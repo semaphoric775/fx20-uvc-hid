@@ -43,7 +43,7 @@ const uint8_t Usb3DeviceDscr[] = {
     0x01,                           /* Device protocol: Interface Association Descriptor. */
     0x09,                           /* Maxpacket size for EP0 : 2^9 */
     0xB4,0x04,                      /* Vendor ID */
-    0x22,0x48,                      /* Product ID */
+    0x23,0x48,                      /* Product ID */
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
@@ -63,7 +63,7 @@ const uint8_t Usb2DeviceDscr[] = {
     0x01,                           /* Device protocol: Interface Association Descriptor. */
     0x40,                           /* Maxpacket size for EP0 : 64 bytes */
     0xB4,0x04,                      /* Vendor ID */
-    0x22,0x48,                      /* Product ID */
+    0x23,0x48,                      /* Product ID */
     0x00,0x00,                      /* Device release number */
     0x01,                           /* Manufacture string index */
     0x02,                           /* Product string index */
@@ -309,12 +309,12 @@ const uint8_t SuperSpeedConfigDescr[] = {
     0xD0,0x02,                      /* Height in pixel: 720 */
     0x00,0x00,0x5E,0x1A,            /* Min bit rate bits/s - 1280*720*16*30 = 0x1a5e0000*/
     0x00,0x00,0x5E,0x1A,            /* Max bit rate bits/s */
-    0x00,0xA4,0x1F,0x00,            /* Maximum video or still frame size in bytes(Deprecated)*/
+    0x00,0x20,0x1C,0x00,            /* Maximum video or still frame size in bytes(Deprecated)*/
     0x15,0x16,0x05,0x00,            /* Default frame interval (in 100ns units):((1/30)*10^7)=333333 ie 30fps */
     0x01,                           /* Frame interval type : No of discrete intervals */
     0x15,0x16,0x05,0x00,            /* 30fps */
 
-    /* Class specific Uncompressed VS frame descriptor - 3 (640*480 VGA) @15 fps */
+    /* Class specific Uncompressed VS frame descriptor - 3 (640*480 VGA) @30 fps */
     0x1E,                           /* Descriptor size */
     0x24,                           /* Class-specific VS i/f type */
     0x05,                           /* Descriptor Subtype : Uncompressed */
@@ -322,12 +322,12 @@ const uint8_t SuperSpeedConfigDescr[] = {
     0x00,                           /* Still image capture method not supported */ 
     0x80,0x02,                      /* Width in pixel:  640 */
     0xE0,0x01,                      /* Height of the frame : 480 */
-    0x00,0x00,0x65,0x04,            /* Min bit rate bits/s: 640*480*2*8*15 = 0x04650000 */
-    0x00,0x00,0x65,0x04,            /* Max bit rate bits/s: 640*480*2*8*15 = 0x04650000 */
-    0x00,0x58,0x02,0x00,            /* Maximum video or still frame size in bytes (Deprecated)*/
-    0x2A,0x2C,0x0A,0x00,            /* Default frame interval (in 100ns units): (1/15)x10^7 ie 15 fps */
+    0x00,0x00,0xCA,0x08,            /* Min bit rate bits/s: 640*480*2*8*30 = 0x08CA0000 */
+    0x00,0x00,0xCA,0x08,            /* Max bit rate bits/s: 640*480*2*8*15 = 0x08CA0000 */
+    0x00,0x60,0x09,0x00,            /* Maximum video or still frame size in bytes (Deprecated)*/
+    0x15,0x16,0x05,0x00,            /* Default frame interval (in 100ns units): (1/15)x10^7 ie 15 fps */
     0x01,                           /* Frame interval type : No of discrete intervals */
-    0x2A,0x2C,0x0A,0x00,            /* Frame interval = 15fps */
+    0x15,0x16,0x05,0x00,            /* Frame interval = 30fps */
 
     /* Endpoint descriptor for streaming video data */
     0x07,                           /* Descriptor size */
@@ -452,11 +452,8 @@ const uint8_t SuperSpeedConfigDescr[] = {
     0x05,                           /* Endpoint descriptor type */
     0x80 | UAC_IN_ENDPOINT,         /* Endpoint address and description */
     0x05,                           /* ISO End point : Async */
-#if STEREO_ENABLE
-    0xC0, 0x00,                     /* Transaction size - 192 bytes */
-#else
-    0x60, 0x00,                     /* Transaction size - 96 bytes */
-#endif /* STEREO_ENABLE */
+    (UAC_XFER_BUF_SIZE & 0xFFU),    /* LSB of UAC transfer buffer size. */
+    (UAC_XFER_BUF_SIZE >> 8U),      /* MSB of UAC transfer buffer size. */
     0x04,                           /* Servicing interval for data transfers: Once in 8 microframes */
     0x00,                           /* bRefresh */
     0x00,                           /* bSynchAddress */
@@ -466,11 +463,8 @@ const uint8_t SuperSpeedConfigDescr[] = {
     0x30,                           /* SS endpoint companion descriptor type */
     0x00,                           /* Max no. of packets in a burst : 1 */
     0x00,                           /* Mult.: Max number of packets : 1 */
-#if STEREO_ENABLE
-    0xC0, 0x00,                     /* Bytes per interval : 192 */
-#else
-    0x60, 0x00,                     /* Bytes per interval : 96 */
-#endif /* STEREO_ENABLE */
+    (UAC_XFER_BUF_SIZE & 0xFFU),    /* LSB of UAC transfer buffer size. */
+    (UAC_XFER_BUF_SIZE >> 8U),      /* MSB of UAC transfer buffer size. */
 
     /* Class Specific AS Isochronous Audio Data Endpoint Descriptor */
     0x07,                           /* Descriptor size in bytes */
@@ -651,7 +645,7 @@ const uint8_t HighSpeedConfigDescr[] = {
     0xE0,0x01,                      /* Height in pixel: 480 */
     0x00,0x00,0x65,0x04,            /* Min bit rate bits/s: 640*480*2*8*15 = 0x04650000 */
     0x00,0x00,0x65,0x04,            /* Max bit rate bits/s: 640*480*2*8*15 = 0x04650000 */
-    0x00,0x58,0x02,0x00,            /* Maximum video or still frame size in bytes (Deprecated)*/
+    0x00,0x60,0x09,0x00,            /* Maximum video or still frame size in bytes (Deprecated)*/
     0x2A,0x2C,0x0A,0x00,            /* Default Frame Interval - 15 fps */
     0x01,                           /* Frame interval(Frame Rate) types: Only one frame interval supported */
     0x2A,0x2C,0x0A,0x00,            /* Shortest Frame Interval - 15 fps*/
@@ -772,11 +766,8 @@ const uint8_t HighSpeedConfigDescr[] = {
     0x05,                           /* Endpoint descriptor type */
     0x80 | UAC_IN_ENDPOINT,         /* Endpoint address and description */
     0x05,                           /* ISO End point : Async */
-#if STEREO_ENABLE
-    0xC0, 0x00,                     /* Transaction size - 192 bytes per frame */
-#else
-    0x60, 0x00,                     /* Transaction size - 96 bytes per frame */
-#endif /* STEREO_ENABLE */
+    (UAC_XFER_BUF_SIZE & 0xFFU),    /* LSB of UAC transfer buffer size. */
+    (UAC_XFER_BUF_SIZE >> 8U),      /* MSB of UAC transfer buffer size. */
     0x04,                           /* Servicing interval for data transfers: Once in 8 microframes */
     0x00,                           /* bRefresh */
     0x00,                           /* bSynchAddress */

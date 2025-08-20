@@ -30,7 +30,7 @@
 #include "cy_usb_app.h"
 
 #if defined(__cplusplus)
-}
+extern "C" {
 #endif
 
 #define FPGASLAVE_ADDR                (0x0D)        //FPGA i2c address (Do not change)
@@ -146,4 +146,7 @@ cy_en_scb_i2c_status_t Cy_FPGAGetVersion(cy_stc_usb_app_ctxt_t *pAppCtxt);
 }
 #endif
 
-#endif //End _CY_USB_i2C_H_
+#endif /* _CY_USB_I2C_H_ */
+
+/*[]*/
+

@@ -50,7 +50,7 @@ APPNAME=mtb-example-fx20-uvc-uac
 
 # Name of toolchain to use. Options include:
 #
-# GCC_ARM -- GCC provided with ModusToolbox software
+# GCC_ARM -- GCC is available as part of ModusToolbox Setup program
 # ARM     -- ARM Clang Compiler (must be installed separately)
 #
 # To use the ARM toolchain, ensure the CY_COMPILER_ARM_DIR environment variable is set to the compiler's directory (absolute path).
@@ -81,11 +81,15 @@ VERBOSE=
 # Name of CORE to use. Options include:
 #
 # CM4  -- Cortex M4
+# CM0P -- Cortex M0+
 CORE ?= CM4
 
 ################################################################################
 # Advanced Configuration
 ################################################################################
+
+# Include the bsp makefile so that we can get the MPN selection details.
+-include bsps/TARGET_$(TARGET)/bsp.mk
 
 # Enable optional code that is ordinarily disabled by default.
 #
@@ -112,22 +116,42 @@ SOURCES=
 # directories (without a leading -I).
 INCLUDES=
 
-
 # Add additional defines to the build process (without a leading -D).
 DEFINES= \
-        CYUSB4024_BZXI=1 \
         BCLK__BUS_CLK__HZ=75000000 \
         DEBUG_INFRA_EN=1 \
         FREERTOS_ENABLE=1 \
         USB3_LPM_ENABLE=0 \
-        USBFS_LOGS_ENABLE=1
+        USBFS_LOGS_ENABLE=1 \
+        AUDIO_IF_EN=1 \
+        FPGA_CONFIG_EN=0
 
-# Loopback disabled by default
+# Internal video generation disabled by default. Set LPBK_EN=yes to enable.
 LPBK_EN?=no
-ifeq ($(LPBK_EN), no)
-    DEFINES += LVDS_LB_EN=0 FPGA_ENABLE=1 LVCMOS_EN=1 LVCMOS_DDR_EN=1 WL_EN=1 INTERLEAVE_EN=0 PORT1_EN=0 FPGA_ADDS_HEADER=0 AUDIO_IF_EN=1 INMD_EN=0
+
+# Colorbar generation by firmware disabled by default. Set FWGEN_EN=yes to enable.
+FWGEN?=no
+
+ifeq ($(LPBK_EN), yes)
+    # The flags below must not be changed for link loopback based colorbar generation.
+    DEFINES += LVDS_LB_EN=1 FPGA_ENABLE=0 LVCMOS_EN=0 LVCMOS_DDR_EN=0 WL_EN=0 INTERLEAVE_EN=0 PORT1_EN=0 FPGA_ADDS_HEADER=0 INMD_EN=0 UVC_INMEM_EN=0
 else
-    DEFINES += LVDS_LB_EN=1 FPGA_ENABLE=0 LVCMOS_EN=0 LVCMOS_DDR_EN=0 WL_EN=0 INTERLEAVE_EN=0 PORT1_EN=0 FPGA_ADDS_HEADER=0 AUDIO_IF_EN=1 INMD_EN=0
+    ifeq ($(FWGEN), yes)
+        # The flags below must not be changed for firmware based colorbar generation.
+        DEFINES += UVC_INMEM_EN=1 LVDS_LB_EN=0 FPGA_ENABLE=0 LVCMOS_EN=1 LVCMOS_DDR_EN=0 WL_EN=0 INTERLEAVE_EN=0 PORT1_EN=0 FPGA_ADDS_HEADER=1 INMD_EN=0
+    else
+        # These are the flags which are set based on FPGA functionality. Please update to match the bit file chosen.
+        DEFINES += \
+		   LVDS_LB_EN=0 \
+		   FPGA_ENABLE=1 \
+		   LVCMOS_EN=1 \
+		   LVCMOS_DDR_EN=1 \
+		   WL_EN=1 \
+		   INTERLEAVE_EN=0 \
+		   PORT1_EN=0 \
+		   FPGA_ADDS_HEADER=0 \
+		   INMD_EN=0
+    endif
 endif
 
 # Select the default USB connection speed from amongst:
@@ -135,8 +159,6 @@ endif
 # CY_USBD_USB_DEV_SS_GEN1, CY_USBD_USB_DEV_HS and CY_USBD_USB_DEV_FS.
 DEFINES += USB_CONN_TYPE=CY_USBD_USB_DEV_SS_GEN2X2
 
-
-# Select softfp or hardfp floating point. Default is softfp.
 # Conditionally append BLOAD_ENABLE=1 if BLENABLE is set to yes
 ifeq ($(BLENABLE), yes)
     DEFINES += BLOAD_ENABLE=1
@@ -203,22 +225,32 @@ endif
 # Additional / custom libraries to link in to the application.
 LDLIBS=
 
+# Default device selection in case information is not provided by the BSP.
+DEVICE ?= CYUSB4024-BZXI
+
+# Set the path to linker script based on MPN selection.
+ifeq ($(filter $(DEVICE),CYUSB4024-BZXI CYUSB4014-FCAXI CYUSB4013-FCAXI CYUSB4011-FCAXI CYUSB3084-FCAXI CYUSB3083-FCAXI CYUSB3284-FCAXI CYUSB4021-FCAXI),$(DEVICE))
+    LDPATH=LinkerScripts/default
+else
+    $(error Unsupported MPN: $(DEVICE))
+endif
+
 # Path to the linker script to use (if empty, use the default linker script).
-ifeq ($(CORE),CM4)
+ifeq ($(CORE), CM4)
     ifeq ($(BLENABLE), yes)
-	# Use loadable linker script for CM4 core
-	LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),fx_cm4_loadable.ld,fx_cm4_loadable.sct)
+        # Use loadable linker script for CM4 core
+        LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),$(LDPATH)/fx_cm4_loadable.ld,$(LDPATH)/fx_cm4_loadable.sct)
     else
-	# Use dual linker script for CM4 core
-	LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),fx_cm4.ld,fx_cm4_dual.sct)
+        # Use dual linker script for CM4 core
+        LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),$(LDPATH)/fx_cm4.ld,$(LDPATH)/fx_cm4_dual.sct)
     endif
 else ifeq ($(CORE),CM0P)
     ifeq ($(BLENABLE), yes)
-	# Use loadable linker script for CM0P core
-	LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),fx_cm0plus_loadable.ld,fx_cm0plus_loadable.sct)
+        # Use loadable linker script for CM0P core
+        LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),$(LDPATH)/fx_cm0plus_loadable.ld,$(LDPATH)/fx_cm0plus_loadable.sct)
     else
-	# Use linker script for CM0P core
-	LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),fx_cm0plus.ld,fx_cm0plus.sct)
+        # Use linker script for CM0P core
+        LINKER_SCRIPT = $(if $(filter GCC_ARM,$(TOOLCHAIN)),$(LDPATH)/fx_cm0plus.ld,$(LDPATH)/fx_cm0plus.sct)
     endif
 endif
 
@@ -226,7 +258,7 @@ endif
 PREBUILD=
 
 # Custom post-build commands to run.
-# Post build to merge bootloader and application
+# Generate HEX file. SHA256 checksum is appended when BLENABLE is set to yes.
 ifeq ($(BLENABLE), yes)
     POSTBUILD=\
         $(CY_MCUELFTOOL) --sign build/$(TARGET)/$(CONFIG)/$(APPNAME).elf SHA256 --output build/$(TARGET)/$(CONFIG)/$(APPNAME).sha.elf && \
@@ -267,9 +299,8 @@ CY_GETLIBS_SHARED_NAME=mtb_shared
 # toolchain used for the build. Refer to the ModusToolbox user guide to get the correct
 # variable name for the toolchain used in your build.
 #
-# The default depends on the selected TOOLCHAIN (GCC_ARM uses the ModusToolbox
-# software provided compiler by default).
-CY_COMPILER_GCC_ARM_DIR=
+# The default path depends on the selected TOOLCHAIN and is set in the Make recipe.
+CY_COMPILER_GCC_ARM_DIR?=
 
 # Locate ModusToolbox helper tools folders in default installation
 # locations for Windows, Linux, and macOS.
@@ -289,12 +320,12 @@ CY_TOOLS_PATHS+=
 CY_TOOLS_DIR=$(lastword $(sort $(wildcard $(CY_TOOLS_PATHS))))
 
 ifeq ($(CY_TOOLS_DIR),)
-$(error Unable to find any of the available CY_TOOLS_PATHS -- $(CY_TOOLS_PATHS). On Windows, use forward slashes.)
+    $(error Unable to find any of the available CY_TOOLS_PATHS -- $(CY_TOOLS_PATHS). On Windows, use forward slashes.)
 endif
 
 $(info Tools Directory: $(CY_TOOLS_DIR))
 
-# Path to Elf tool directory. 
+# Path to Elf tool directory.
 CY_MCUELFTOOL_DIR=$(wildcard $(CY_TOOLS_DIR)/cymcuelftool-*)
 
 # CY MCU ELF tool executable path.
@@ -306,6 +337,7 @@ endif
 
 # Path to FROMELF tool.
 FROMELF=$(MTB_TOOLCHAIN_ARM__ELF2BIN)
+
 
 # Path to OBJCOPY tool.
 OBJCOPY=$(MTB_TOOLCHAIN_GCC_ARM__ELF2BIN)

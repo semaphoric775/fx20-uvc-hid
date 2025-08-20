@@ -43,6 +43,7 @@
 #include "cy_usb_i2c.h"
 #include "cy_usb_qspi.h"
 #include "cybsp.h"
+#include "cy_fx_common.h"
 
 #if LVCMOS_EN
 #include "cy_gpif_header_lvcmos.h"
@@ -440,13 +441,14 @@ cy_stc_lvds_md_config_t uvcMdArray0[16] = {
 void Cy_LVDS_LVCMOS_Init (void)
 {
     cy_en_lvds_status_t status = CY_LVDS_SUCCESS;
-#if LVDS_LB_EN
-    Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_INIT_LVDS_LB_EN);
-    Cy_LVDS_PhyInit(LVDSSS_LVDS, 1, &cy_lvds_phy1_config, &lvdsContext);
-    Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 3, 1, 0, 0, 0);
-    Cy_LVDS_GpifInit(LVDSSS_LVDS, 1, &cy_lvds_gpif1_config, &lvdsContext);
-    LOG_COLOR(" LVDS Link Loop back Enabled \n\r");
+    uint32_t smIntrMask = LVDSSS_LVDS_LVDS_INTR_MASK_WD0_GPIF0_INTERRUPT_Msk;
+    uint8_t portIdx = 0;
+    uint8_t thrdIdx = 0;
 
+    (void)smIntrMask;
+    (void)thrdIdx;
+
+#if LVDS_LB_EN
     cy_en_hbdma_mgr_status_t mgrstat;
     cy_stc_hbdma_chn_config_t chn_conf = 
     {
@@ -464,137 +466,110 @@ void Cy_LVDS_LVCMOS_Init (void)
         .userCtx = (void *)&appCtxt
     };
 
+    Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_INIT_LVDS_LB_EN);
+    Cy_LVDS_Init(LVDSSS_LVDS, 1, &cy_lvds1_config, &lvdsContext);
+    Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 3, 1, 0, 0, 0);
+    LOG_COLOR(" LVDS Link Loop back Enabled \n\r");
+
     mgrstat = Cy_HBDma_Channel_Create(&HBW_MgrCtxt, &lvdsLbPgmChannel, &chn_conf);
     if (mgrstat != CY_HBDMA_MGR_SUCCESS)
     {
         DBG_APP_ERR("Loopback channel create failed 0x%x\r\n", mgrstat);
     }
-#endif /* LVDS_LB_EN */
-
-#if !LVDS_LB_EN
-    Cy_LVDS_SetInterruptMask(LVDSSS_LVDS, LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_TRAINING_DONE_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_TRAINING_DONE_Msk|
-                                              LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_TRAINING_BLK_DETECTED_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_TRAINING_BLK_DETECTED_Msk |
-                                              LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_TRAINING_BLK_DET_FAILD_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_TRAINING_BLK_DET_FAILD_Msk|
-                                              LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_L1_ENTRY_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_L1_ENTRY_Msk |
-                                              LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_L1_EXIT_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_L1_EXIT_Msk |
-                                              LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_L3_ENTRY_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_L3_ENTRY_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_PHY_LINK0_INTERRUPT_Msk |
-                                              LVDSSS_LVDS_LVDS_INTR_WD0_PHY_LINK1_INTERRUPT_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_THREAD0_ERR_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_THREAD1_ERR_Msk |
-                                              LVDSSS_LVDS_LVDS_INTR_WD0_THREAD2_ERR_Msk | LVDSSS_LVDS_LVDS_INTR_WD0_THREAD3_ERR_Msk | LVDSSS_LVDS_LVDS_INTR_MASK_WD0_GPIF0_INTERRUPT_Msk);
-    Cy_LVDS_RegisterCallback(LVDSSS_LVDS, &cb, &lvdsContext,&appCtxt);
+#else
+    Cy_LVDS_SetInterruptMask(LVDSSS_LVDS,
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_TRAINING_DONE_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_TRAINING_DONE_Msk|
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_TRAINING_BLK_DETECTED_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_TRAINING_BLK_DETECTED_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_TRAINING_BLK_DET_FAILD_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_TRAINING_BLK_DET_FAILD_Msk|
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_L1_ENTRY_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_L1_ENTRY_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_L1_EXIT_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_L1_EXIT_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK0_L3_ENTRY_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_LNK1_L3_ENTRY_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_PHY_LINK0_INTERRUPT_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_PHY_LINK1_INTERRUPT_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_THREAD0_ERR_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_THREAD1_ERR_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_THREAD2_ERR_Msk |
+            LVDSSS_LVDS_LVDS_INTR_WD0_THREAD3_ERR_Msk);
 #endif /* !LVDS_LB_EN */
 
 #if PORT1_EN
     LOG_COLOR("Enabling PORT-1\n\r");
     Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_PPORT1_EN);
-    status = Cy_LVDS_Init(LVDSSS_LVDS, 1, &cy_lvds0_config, &lvdsContext);
-    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
-    DBG_APP_INFO("PORT1: LVDS Init done\r\n");
-
-    Cy_LVDS_Enable(LVDSSS_LVDS);
-    DBG_APP_INFO("PORT1: LVDS Enable\r\n");
-
-#if (FPGA_ENABLE && LINK_TRAINING)
-   Cy_LVDS_PhyGpioSet(LVDSSS_LVDS, LINK_READY_CTL_PORT, LINK_READY_CTL_PIN);
-#endif /* (FPGA_ENABLE && LINK_TRAINING) */
-
-/* In case of LVDS call PHY Training for PORT1 */
-#if (!LVCMOS_EN)
-    status = Cy_LVDS_PhyTrainingStart(LVDSSS_LVDS, 1, cy_lvds0_config.phyConfig);
-    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
-#endif /* !LVCMOS_EN */
-
-    /* Set Interrupt Mask for GPIF */
-    Cy_LVDS_SetInterruptMask(LVDSSS_LVDS, LVDSSS_LVDS_LVDS_INTR_MASK_WD0_GPIF1_INTERRUPT_Msk);
-    DBG_APP_INFO("PORT1:Set Interrupt Mask for GPIF\r\n");
-
-    Cy_LVDS_RegisterCallback(LVDSSS_LVDS, &cb, &lvdsContext, &appCtxt);
-
-#if (LVCMOS_EN && (!INMD_EN))
-    status = Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 2, 0, 0, 0, 1);
-    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
-#endif /* LVCMOS_EN && (!INMD_EN)  */
-
-#if LVCMOS_EN
-    Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_LVCMOS_EN);
-    status = Cy_LVDS_GpifSMStart(LVDSSS_LVDS, 1, 0, 0xC);
-    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
+    portIdx    = 1;
+    thrdIdx    = 2;
+    smIntrMask = LVDSSS_LVDS_LVDS_INTR_MASK_WD0_GPIF1_INTERRUPT_Msk;
 #else
-    Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_LVDS_EN);
-    status = Cy_LVDS_GpifSMStart(LVDSSS_LVDS, 1, 0, 0);
-    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
-#endif /* LVCMOS_EN */
-
-    DBG_APP_INFO("PORT1: Gpif SMStart\r\n");
-#else  /* ---- NOTE : PORT1 END / PORT0 START ----- */
     LOG_COLOR("Enabling PORT-0\n\r");
     Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_PPORT0_EN);
-    status = Cy_LVDS_Init(LVDSSS_LVDS, 0, &cy_lvds0_config, &lvdsContext);
-    DBG_APP_INFO("PORT0: LVDS Init done: status %x\r\n",status);
+    portIdx    = 0;
+    thrdIdx    = 0;
+    smIntrMask = LVDSSS_LVDS_LVDS_INTR_MASK_WD0_GPIF0_INTERRUPT_Msk;
+#endif /* PORT1_EN */
 
+    /* The same configuration is used regardless of the port to be initialized. */
+    status = Cy_LVDS_Init(LVDSSS_LVDS, portIdx, &cy_lvds0_config, &lvdsContext);
+    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
+    DBG_APP_INFO("SIP AFE Init done\r\n");
+    
+    Cy_LVDS_SetInterruptMask(LVDSSS_LVDS, smIntrMask);
+    DBG_APP_INFO("Set Interrupt Mask for GPIF-SM\r\n");
+    
+   /* Register callbacks with the LVDS driver. */
+    Cy_LVDS_RegisterCallback(LVDSSS_LVDS, &cb, &lvdsContext, &appCtxt);
+	
     Cy_LVDS_Enable(LVDSSS_LVDS);
-    DBG_APP_INFO("PORT0: LVDS Enable\r\n");
+    DBG_APP_INFO("SIP enabled\r\n");
 
 #if (FPGA_ENABLE && LINK_TRAINING)
     Cy_LVDS_PhyGpioSet(LVDSSS_LVDS, LINK_READY_CTL_PORT, LINK_READY_CTL_PIN);
 #endif /* (FPGA_ENABLE && LINK_TRAINING) */
 
-    /* In case of LVDS call PHY Training for PORT0 (+ PORT1 in WL_EN) */
 #if ((!LVCMOS_EN) && (!LVDS_LB_EN))
-    Cy_LVDS_PhyTrainingStart(LVDSSS_LVDS, 0, cy_lvds0_config.phyConfig);
-#endif /* (!LVCMOS_EN) && (!LVDS_LB_EN) */
+    /* Perform PHY training. */
+    status = Cy_LVDS_PhyTrainingStart(LVDSSS_LVDS, portIdx, cy_lvds0_config.phyConfig);
+    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
+#endif /* ((!LVCMOS_EN) && (!LVDS_LB_EN)) */
 
-    /* Set Interrupt Mask for GPIF */
-    Cy_LVDS_SetInterruptMask(LVDSSS_LVDS, LVDSSS_LVDS_LVDS_INTR_MASK_WD0_GPIF0_INTERRUPT_Msk);
-    DBG_APP_INFO("PORT0: Set Interrupt Mask for GPIF\r\n");
-
-    Cy_LVDS_RegisterCallback(LVDSSS_LVDS, &cb, &lvdsContext, &appCtxt);
-
-#if LVDS_LB_EN
-    Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 0, 0, 0, 0, 0);
-#endif /* LVDS_LB_EN */
-
-#if (LVCMOS_EN && (!INMD_EN) )
-    Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 0, 0, 0, 0, 0);
-    DBG_APP_INFO("PORT0: GPIF Thread Config - 1\n");
+#if ((LVCMOS_EN) && (!INMD_EN))
+    /* In LVCMOS use case, thread needs to be enabled manually. */
+    status = Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, thrdIdx, 0, 0, 0, portIdx);
+    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
 
 #if INTERLEAVE_EN
-    Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 1, 1, 0, 0, 0);
-    DBG_APP_INFO("PORT0: GPIF Thread Config - 2\n");
+    status = Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 1, 1, 0, 0, 0);
+    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
 #endif /* INTERLEAVE_EN */
-#endif /* LVCMOS_EN && (!INMD_EN) */
+
+    DBG_APP_INFO("GPIF thread configured\r\n");
+#endif /* ((LVCMOS_EN) && (!INMD_EN)) */
 
 #if INMD_EN
-    Cy_LVDS_InitMetadata(LVDSSS_LVDS, 0, 0, 16, uvcMdArray0);
+    Cy_LVDS_InitMetadata(LVDSSS_LVDS, portIdx, 0, 16, uvcMdArray0);
 #if INTERLEAVE_EN
     Cy_LVDS_InitMetadata(LVDSSS_LVDS, 1, 0, 16, uvcMdArray0);
-#endif
+#endif /* INTERLEAVE_EN */
     LOG_COLOR("Port#0: INMD Enable \r\n");
-#endif /* INMD */
+#endif /* INMD_EN */
 
 #if LVCMOS_EN
     Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_LVCMOS_EN);
-    status = Cy_LVDS_GpifSMStart(LVDSSS_LVDS, 0, 0, 0xC);
-    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
 #else
     Cy_USBD_AddEvtToLog(&usbdCtxt, CY_USB_EVT_LVDS_EN);
-    status = Cy_LVDS_GpifSMStart(LVDSSS_LVDS, 0, 0, 0);
-    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
 #endif /* LVCMOS_EN */
-
-    DBG_APP_INFO("PORT0:Gpif SMStart\r\n");
-#endif /* PORT1_EN */
+    status = Cy_LVDS_GpifSMStart(LVDSSS_LVDS, portIdx, START_STATE_ID, ALPHA_START_STATE);
+    ASSERT_NON_BLOCK(CY_LVDS_SUCCESS == status, status);
+    DBG_APP_INFO("GPIF State Machine started\r\n");
 
 #if LVDS_LB_EN
+    Cy_LVDS_GpifThreadConfig(LVDSSS_LVDS, 0, 0, 0, 0, 0);
     Cy_LVDS_GpifSMStart(LVDSSS_LVDS, 1, 0, 0);
-#endif
-
-#if LVDS_THREAD_ERROR_DETECT_EN
-    /* Set INTR Mask for LVDS_ERROR(Thread Error) */
-    Cy_LVDS_SetInterruptMask(LVDSSS_LVDS, LVDSSS_LVDS_LVDS_INTR_MASK_WD0_THREAD0_ERR_Msk |
-                                LVDSSS_LVDS_LVDS_INTR_MASK_WD0_THREAD1_ERR_Msk|
-                                LVDSSS_LVDS_LVDS_INTR_MASK_WD0_THREAD2_ERR_Msk |
-                                LVDSSS_LVDS_LVDS_INTR_MASK_WD0_THREAD3_ERR_Msk);
-#endif /* LVDS_THREAD_ERROR_DETECT_EN */
+#endif /* LVDS_LB_EN */
 }
 
 /*****************************************************************************
@@ -679,33 +654,6 @@ void Cy_Fx3g2_InitPeripheralClocks (
         Cy_SysLib_DelayUs(10U);
         Cy_SysClk_PeriphAssignDivider(PCLK_USB_CLOCK_DEV_BRS, CY_SYSCLK_DIV_16_BIT, 2);
     }
-}
-
-/*******************************************************************************
- * Function name: Cy_Fx3G2_OnResetInit(void)
- ****************************************************************************//**
- * TODO Ideally, this should be defined in cybsp.c
- * This function performs initialization that is required to enable scatter
- * loading of data into the High BandWidth RAM during device boot-up. The FX10/FX20
- * device comes up with the High BandWidth RAM disabled and hence any attempt
- * to read/write the RAM will cause the processor to hang. The RAM needs to
- * be enabled with default clock settings to allow scatter loading to work.
- * This function needs to be called from Cy_OnResetUser.
- *
- *******************************************************************************/
-void
-Cy_Fx3G2_OnResetInit (
-        void)
-{
-    /* Enable clk_hf4 with IMO as input. */
-    SRSS->CLK_ROOT_SELECT[4] = SRSS_CLK_ROOT_SELECT_ENABLE_Msk;
-
-    /* Enable LVDS2USB32SS IP and select clk_hf[4] as clock input. */
-    MAIN_REG->CTRL = (
-            MAIN_REG_CTRL_IP_ENABLED_Msk |
-            (1UL << MAIN_REG_CTRL_NUM_FAST_AHB_STALL_CYCLES_Pos) |
-            (1UL << MAIN_REG_CTRL_NUM_SLOW_AHB_STALL_CYCLES_Pos) |
-            (3UL << MAIN_REG_CTRL_DMA_SRC_SEL_Pos));
 }
 
 /*****************************************************************************
@@ -989,20 +937,22 @@ void Cy_USB_USBSSInit (void)
 
 #if FPGA_ENABLE
     memset((void *)&pinCfg, 0, sizeof(pinCfg));
-    /* Configure c_reset FPGA GPIO. */
-    pinCfg.driveMode = CY_GPIO_DM_STRONG_IN_OFF;
-    pinCfg.hsiom     = TI180_CRESET_GPIO;
-    gpio_status = Cy_GPIO_Pin_Init(TI180_CRESET_GPIO_PORT, TI180_CRESET_GPIO_PIN, &pinCfg);
-    ASSERT_NON_BLOCK(CY_GPIO_SUCCESS == gpio_status, gpio_status);
-    Cy_GPIO_Clr(TI180_CRESET_GPIO_PORT, TI180_CRESET_GPIO_PIN);
-    Cy_SysLib_Delay(20);
-    Cy_GPIO_Set(TI180_CRESET_GPIO_PORT, TI180_CRESET_GPIO_PIN);
 
     /* Configure input GPIO. */
     pinCfg.driveMode = CY_GPIO_DM_HIGHZ;
     pinCfg.hsiom = HSIOM_SEL_GPIO;
-    gpio_status = Cy_GPIO_Pin_Init(T120_CDONE_PORT, T120_CDONE_PIN, &pinCfg);
+    gpio_status = Cy_GPIO_Pin_Init(TI180_CDONE_PORT, TI180_CDONE_PIN, &pinCfg);
     ASSERT_NON_BLOCK(CY_GPIO_SUCCESS == gpio_status, gpio_status);
+
+    /* Configure RESET FPGA GPIO. */
+    pinCfg.driveMode = CY_GPIO_DM_STRONG_IN_OFF;
+    pinCfg.hsiom     = TI180_INIT_RESET_GPIO;
+    gpio_status = Cy_GPIO_Pin_Init(TI180_INIT_RESET_PORT, TI180_INIT_RESET_PIN, &pinCfg);
+    ASSERT_NON_BLOCK(CY_GPIO_SUCCESS == gpio_status, gpio_status);
+    
+    Cy_GPIO_Clr(TI180_INIT_RESET_PORT, TI180_INIT_RESET_PIN);
+    Cy_SysLib_Delay(20);
+    Cy_GPIO_Set(TI180_INIT_RESET_PORT, TI180_INIT_RESET_PIN);
 #endif /* FPGA_ENABLE */
 
     /* Register the LVDS ISR and enable the interrupt for LVDS. */
@@ -1107,6 +1057,41 @@ void Cy_USB_USBSSInit (void)
     NVIC_EnableIRQ(lvds2usb32ss_lvds_wakeup_int_o_IRQn);
 }
 
+/*
+ * Notes on DMA Buffer RAM Usage:
+ * 1. The initial part of the buffer RAM is reserved for the descriptors used by the DMA manager.
+ *    The space used for this is reserved using the gHbDmaDescriptorSpace array which is placed
+ *    in a section named ".hbDmaDescriptor". This array should have a minimum size of 8192 (8 KB)
+ *    and has a default size allocation of 16384 bytes (16 KB). No other data should be placed
+ *    in this section.
+ *
+ * 2. The descriptor region is followed by RW data structures which are placed in the ".descSection".
+ *    Only data members placed in this section will be initialized during the firmware load
+ *    process.
+ *
+ * 3. The ".descSection" is followed by the ".hbBufSection" which will hold data structures
+ *    which do not need to be explicitly initialized (equivalent of ".bss" section).
+ *
+ * 4. This is followed by the ".hbDmaBufferHeap" section which will be used to allocate all
+ *    the DMA buffers from. The gHbDmaBufferHeap array represents the memory region which will
+ *    be given to the DMA buffer manager to allocate buffers from and can be sized based on the
+ *    available memory. No other data or variables should be placed in this section.
+ *
+ * Any pre-initialized data which is to be placed in the High BandWidth Buffer RAM should be
+ * added to the ".descSection". Any non-initialized data which is to be placed in the High
+ * BandWidth Buffer RAM should be added to the ".hbBufSection".
+ */
+
+/* Region of 16 KB reserved for High BandWidth DMA descriptors. */
+static __attribute__ ((section(".hbDmaDescriptor"), used)) uint32_t gHbDmaDescriptorSpace[16384 / 4];
+
+/* Region of 960 KB reserved for DMA buffer heap. */
+/*
+ * Note: Since this application requires a large amount of buffer RAM, it is only supported on parts
+ * that support 1 MB of DMA buffer RAM.
+ */
+static __attribute__ ((section(".hbDmaBufferHeap"), used)) uint32_t gHbDmaBufferHeap[960 * 1024 / 4];
+
 /*****************************************************************************
  * Function Name: Cy_InitHbDma
  *****************************************************************************
@@ -1131,15 +1116,21 @@ bool Cy_InitHbDma(void)
         return false;
     }
 
-    /* Setup a HBW DMA descriptor list. */
-    mgrstat = Cy_HBDma_DscrList_Create(&HBW_DscrList, 256U);
+    /* Verify that gHbDmaDescriptorSpace is located at the base of the DMA buffer SRAM. */
+    if ((uint32_t)gHbDmaDescriptorSpace != CY_HBW_SRAM_BASE_ADDR) {
+        DBG_APP_ERR("High BandWidth DMA descriptors not placed at the correct address\r\n");
+        return false;
+    }
+
+    /* Setup a HBW DMA descriptor list using the space reserved in gHbDmaDescriptorSpace. */
+    mgrstat = Cy_HBDma_DscrList_Create(&HBW_DscrList, sizeof(gHbDmaDescriptorSpace) / 16);
     if (mgrstat != CY_HBDMA_MGR_SUCCESS)
     {
         return false;
     }
 
-    /* Initialize the DMA buffer manager. We will use 512 KB of space from 0x1C030000 onwards. */
-    mgrstat = Cy_HBDma_BufMgr_Create(&HBW_BufMgr, (uint32_t *)0x1C030000UL, 0x80000UL);
+    /* Initialize the DMA buffer manager to use the gHbDmaBufferHeap region. */
+    mgrstat = Cy_HBDma_BufMgr_Create(&HBW_BufMgr, (uint32_t *)gHbDmaBufferHeap, sizeof(gHbDmaBufferHeap));
     if (mgrstat != CY_HBDMA_MGR_SUCCESS)
     {
         return false;
@@ -1324,7 +1315,6 @@ int main (void)
 
     /* Initialize the device clocks to the desired values. */
     cybsp_init();
-    
     Cy_Fx3g2_InitPeripheralClocks(true, true);
 
     hfclkFreq = Cy_SysClk_ClkFastGetFrequency();
@@ -1335,7 +1325,14 @@ int main (void)
     /* Unlock and then disable the watchdog. */
     Cy_WDT_Unlock();
     Cy_WDT_Disable();
-    /* Enable interrupts. */
+
+#if CY_CPU_CORTEX_M4
+    /*
+     * If logging is done through the USBFS port, ISR execution is required in this application.
+     * Set BASEPRI value to 0 to ensure all exceptions can run and then enable interrupts.
+     */
+    __set_BASEPRI(0);
+#endif /* CY_CPU_CORTEX_M4 */
     __enable_irq ();
 
 #if DEBUG_INFRA_EN
@@ -1346,15 +1343,16 @@ int main (void)
 #endif /* USBFS_LOGS_ENABLE */
 
     Cy_Debug_LogInit(&dbgCfg);
-
-    /* Create task for printing logs and check status. */
-    xTaskCreate(Cy_PrintTaskHandler, "PrintLogTask", 512, NULL, 5, &printLogTaskHandle);
     Cy_SysLib_Delay(500);
+
     Cy_Debug_AddToLog(1, "***** FX20: USB Video (UVC) Application *****\r\n");
     /* Print application, USBD stack and HBDMA version information. */
     Cy_PrintVersionInfo("APP_VERSION: ", APP_VERSION_NUM);
     Cy_PrintVersionInfo("USBD_VERSION: ", USBD_VERSION_NUM);
     Cy_PrintVersionInfo("HBDMA_VERSION: ", HBDMA_VERSION_NUM);
+
+    /* Create task for printing logs and check status. */
+    xTaskCreate(Cy_PrintTaskHandler, "PrintLogTask", 512, NULL, 5, &printLogTaskHandle);
 #endif /* DEBUG_INFRA_EN */
 
     memset((uint8_t *)&appCtxt, 0, sizeof(appCtxt));
@@ -1437,7 +1435,7 @@ int main (void)
  *****************************************************************************/
 void Cy_OnResetUser(void)
 {
-    Cy_Fx3G2_OnResetInit();
+    Cy_UsbFx_OnResetInit();
 }
 
 /*****************************************************************************

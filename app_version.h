@@ -1,6 +1,6 @@
 /***************************************************************************//**
 * \file app_version.h
-* \version 1.0.2
+* \version 1.0.3
 *
 * @brief @{Version definition for the firmware application. This version
 * information follows a Cypress defined format that identifies the type
@@ -27,17 +27,19 @@
 *******************************************************************************/
 #ifndef _APP_VERSION_H_
 #define _APP_VERSION_H_
+
 /******************************************************************************
  * Constant definitions.
  *****************************************************************************/
 #define APP_VERSION_MAJOR      (1u)
 #define APP_VERSION_MINOR      (0u)
-#define APP_VERSION_PATCH      (2u)
-#define APP_VERSION_BUILD      (85u)
+#define APP_VERSION_PATCH      (3u)
+#define APP_VERSION_BUILD      (91u)
 
 #define APP_VERSION_NUM        ((APP_VERSION_MAJOR << 28u) | (APP_VERSION_MINOR << 24u) | \
         (APP_VERSION_PATCH << 16u) | (APP_VERSION_BUILD))
         
 #endif /* _APP_VERSION_H_ */
+
 /* [] END OF FILE */
 

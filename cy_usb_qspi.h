@@ -26,8 +26,8 @@
 
 
 
-#ifndef _QSPI_H_
-#define _QSPI_H_
+#ifndef _CY_USB_QSPI_H_
+#define _CY_USB_QSPI_H_
 
 #include "cy_pdl.h"
 #include "cy_usb_i2c.h"
@@ -35,10 +35,10 @@
 #include "cy_usb_app.h"
 
 #if defined(__cplusplus)
-}
+extern "C" {
 #endif
 
-
+#if FPGA_CONFIG_EN
 /*****************************************************************************
 *                          SMIF enums
 ******************************************************************************/
@@ -160,24 +160,11 @@ typedef struct
 #define SMIF_DATA7_PORT                         (P7_7_PORT)
 #define SMIF_DATA7_PIN                          (P7_7_PIN)
 
-#define T120_CDONE_PIN                          (P4_4_PIN)
-#define T120_CDONE_PORT                         (P4_4_PORT)
+#define TI180_PROGRAM_N_PORT                    (P6_4_PORT)
+#define TI180_PROGRAM_N_PIN                     (P6_4_PIN)
 
-#define T120_INIT_RESET_PORT                    (P4_3_PORT)
-#define T120_INIT_RESET_PIN                     (P4_3_PIN)
-
-#define T120_PROGRAM_N_PORT                     (P6_4_PORT)
-#define T120_PROGRAM_N_PIN                      (P6_4_PIN)
-
-#define T120_FPGA_SSN_PORT                      (P6_3_PORT)
-#define T120_FPGA_SSN_PIN                       (P6_3_PIN)
-
-#define HDMI_KIT_USER_LED_PORT                  (P13_1_PORT)
-#define HDMI_KIT_USER_LED_PIN                   (P13_1_PIN)
-
-#define HDMI_KIT_FPGA_SOFTRESET_PORT            (P11_5_PORT)
-#define HDMI_KIT_FPGA_SOFTRESET_PIN             (P11_5_PIN)
-
+#define TI180_FPGA_SSN_PORT                     (P6_3_PORT)
+#define TI180_FPGA_SSN_PIN                      (P6_3_PIN)
 
 #define CY_APP_QSPI_STATUS_1_READ_CMD           (0x05)
 #define CY_APP_QSPI_STATUS_2_READ_CMD           (0x07)
@@ -405,8 +392,12 @@ bool Cy_QSPI_IsMemBusy(cy_en_flash_index_t flashIndex);
 *****************************************************************************/
 cy_en_smif_status_t Cy_SPI_FlashInit (cy_en_flash_index_t flashIndex, bool quadEnable, bool qpiEnable);
 
+#endif /* FPGA_CONFIG_EN */
+
 #if defined(__cplusplus)
 }
 #endif
 
-#endif /*_QSPI_H_*/
+#endif /* _CY_USB_QSPI_H_ */
+
+/*[]*/

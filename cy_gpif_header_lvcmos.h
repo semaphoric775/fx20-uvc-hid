@@ -20,6 +20,9 @@
 extern "C" {
 #endif
 
+#define START_STATE_ID    (0)
+#define ALPHA_START_STATE (0x0C)
+
 const cy_stc_lvds_gpif_wavedata_t cy_lvds_gpif0_wavedata[] = {
 
     {{0x1E086001,0x000302C4,0x80000000,0x00000000},{0x00000000,0x00000000,0x00000000,0x00000000}},

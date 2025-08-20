@@ -77,15 +77,48 @@ extern "C" {
 #define CY_USB_EP_BULK_VIDEO_PKT_SIZE              (0x400)     /* UVC video streaming endpoint packet Size */
 #define CY_USB_EP_BULK_VIDEO_PKTS_COUNT            (0x01)      /* UVC video streaming endpoint packet Count */
 #define CY_USB_UVC_MAX_VID_FRAMES                  (2)         /* Maximum number of video frames (4) */
+
+/* DMA buffer size used for video streaming. Different sizes are used in different cases.
+ *
+ * 1. In the LVDS link loopback case, the buffer size needs to be 32 bytes + a multiple of the video line size.
+ *    Since we are support 3840*2160, 1280*720 and 640*480 video resolutions with 2 bytes per pixel;
+ *    the size needs to be of the form 7680 * n + 32. We are using a size of 61440 + 32 = 61472 bytes
+ *    as this is the largest suitable size which is supported by the DMA framework.
+ *
+ * 2. Firmware addition of header on top of video recieved from FPGA. In this case, it is preferred to
+ *    keep the DMA buffer size (inclusive of the 32 byte UVC header) as a multiple of the USB endpoint
+ *    maximum packet size of 1024 bytes. If the size chosen is more than 32 KB (32768 bytes) and a
+ *    multiple of 1024 bytes, streaming does not work with the UVC drivers on Linux. When using Bulk
+ *    endpoints for streaming, the Linux driver requires dwMaxPayloadTransferSize to either be:
+ *    a. Less than or equal to 32768 bytes
+ *    b. Be a multiple of 32768 bytes
+ *    c. End with a short packet
+ *    Considering these constraints, the buffer size is chosen as 65536 bytes.
+ *
+ * 3. Pre-added UVC header by FPGA: For the best streaming throughput, the buffer size should be a
+ *    multiple of 1024 bytes. The buffer size configured on the FPGA side is a 16-bit quantity. Hence,
+ *    the buffer size is chosen as 63 KB (64512 bytes) in this case.
+ */
 #if LVDS_LB_EN
-#define CY_USB_UVC_STREAM_BUF_SIZE                 (61472)     /* UVC Buffer size  */
+#define CY_USB_UVC_STREAM_BUF_SIZE                 (61472)     /* Buffer size as well as UVC payload is 61472 bytes. */
 #else
-#define CY_USB_UVC_STREAM_BUF_SIZE                 (64512)     /* UVC Buffer size  */
-#endif
+
+#if ((FPGA_ADDS_HEADER || INMD_EN))
+#define CY_USB_UVC_STREAM_BUF_SIZE                 (64512)     /* Buffer size is 63 KB. UVC payload is full frame. */
+#else
+#define CY_USB_UVC_STREAM_BUF_SIZE                 (65536)     /* Buffer size as well as UVC payload is 64 KB. */
+#endif /* ((FPGA_ADDS_HEADER || INMD_EN)) */
+
+#endif /* LVDS_LB_EN */
+
 #define CY_USB_BULK_BURST                          (8)         /* Burst size for SS operation only. */
 #define CY_USB_UVC_STREAM_BUF_COUNT                (3)         /* UVC Buffer count */
 #define CY_USB_UVC_MAX_HEADER                      (32)        /* Maximum number of header bytes in UVC */
 #define CY_USB_UVC_HEADER_DEFAULT_BFH              (0x8C)      /* Default BFH(Bit Field Header) for the UVC Header */
+
+#define UVC_INMEM_BUF_SIZE                         (0xF000)    /* Size of video buffers used for in-mem streaming. */
+#define UVC_INMEM_BUF_COUNT                        (8)         /* Number of video buffers used for in-mem streaming. */
+#define UVC_INMEM_LASTBUF_SIZE                     (0x40)      /* Size of the last buffer used for in-mem streaming. */
 
 #define CY_USB_UVC_MAX_PROBE_SETTING               (34)        /* Maximum number of bytes in Probe Control */
 #define CY_USB_UVC_MAX_PROBE_SETTING_ALIGNED       (64)        /* Maximum number of bytes in Probe Control aligned to 4 byte */
@@ -144,6 +177,10 @@ extern "C" {
 #define USB3_DESC_ATTRIBUTES __attribute__ ((section(".descSection"), used)) __attribute__ ((aligned (32)))
 #define HBDMA_BUF_ATTRIBUTES __attribute__ ((section(".hbBufSection"), used)) __attribute__ ((aligned (32)))
 
+#if AUDIO_IF_EN
+#define STEREO_ENABLE                              (1)             /* Enable two PDM channels for stereo input. */
+#endif /* AUDIO_IF_EN */
+
 #define UVC_STREAM_ENDPOINT                        (0x01)          /* IN endpoint used for UVC video stream. */
 #define UVC_CONTROL_ENDPOINT                       (0x02)          /* IN endpoint used for UVC control interface. */
 #define UAC_IN_ENDPOINT                            (0x03)          /* IN endpoint used for UAC audio stream. */
@@ -152,6 +189,13 @@ extern "C" {
 #define UVC_STREAM_INTF_NUM                        (0x01)          /* Index of UVC streaming interface. */
 #define UAC_CONTROL_INTF_NUM                       (0x02)          /* Index of UAC control interface. */
 #define UAC_STREAM_INTF_NUM                        (0x03)          /* Index of UAC stream interface. */
+
+#define UAC_EP_MAX_PKT_SIZE                        (192)           /* Max. packet size for audio streaming EP. */
+#if STEREO_ENABLE
+#define UAC_XFER_BUF_SIZE                          (UAC_EP_MAX_PKT_SIZE * 2)
+#else
+#define UAC_XFER_BUF_SIZE                          (UAC_EP_MAX_PKT_SIZE)
+#endif /* STEREO_ENABLE */
 
 #define CY_USB_UVC_SS_4K_FRAME_INDEX               (1)
 #define CY_USB_UVC_SS_720P_FRAME_INDEX             (2)

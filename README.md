@@ -1,17 +1,17 @@
 # EZ-USB&trade; FX20: USB Video Class (UVC) application
 
-This code example demonstrates the implementation of a UVC 1.1 compliant camera application using the EZ-USB&trade; FX20 device. An integrated USB Audio Class interface is provided to stream the audio data received from a PDM microphone. This example illustrates the configuration and usage of Sensor Interface Port (SIP) on the EZ-USB&trade; FX20 device to implement the Synchronous Slave FIFO IN protocol.
+This code example demonstrates the implementation of a USB Video Class (UVC) 1.1-compliant camera application using Infineon's EZ-USB&trade; FX20 device. An integrated USB Audio Class (UAC) interface is provided to stream the audio data received from a PDM microphone. This example illustrates the configuration and usage of the sensor interface port (SIP) on the EZ-USB&trade; FX20 device to implement the synchronous slave FIFO IN protocol.
 
-> **Note:** This code example is applicable for EZ-USB&trade; FX20, EZ-USB&trade; FX10, and EZ-USB&trade; FX5 devices.
+> **Note:** This code example is applicable to EZ-USB&trade; FX20, EZ-USB&trade; FX10, and EZ-USB&trade; FX5 devices.
 
 [View this README on GitHub.](https://github.com/Infineon/mtb-example-fx20-uvc-uac)
 
-[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDA4NjUiLCJTcGVjIE51bWJlciI6IjAwMi00MDg2NSIsIkRvYyBUaXRsZSI6IkVaLVVTQiZ0cmFkZTsgRlgyMDogVVNCIFZpZGVvIENsYXNzIChVVkMpIGFwcGxpY2F0aW9uIiwicmlkIjoic3VrdSIsIkRvYyB2ZXJzaW9uIjoiMS4wLjIiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiV0lSRUQiLCJEb2MgRmFtaWx5IjoiU1NfVVNCIn0=)
+[Provide feedback on this code example.](https://cypress.co1.qualtrics.com/jfe/form/SV_1NTns53sK2yiljn?Q_EED=eyJVbmlxdWUgRG9jIElkIjoiQ0UyNDA4NjUiLCJTcGVjIE51bWJlciI6IjAwMi00MDg2NSIsIkRvYyBUaXRsZSI6IkVaLVVTQiZ0cmFkZTsgRlgyMDogVVNCIFZpZGVvIENsYXNzIChVVkMpIGFwcGxpY2F0aW9uIiwicmlkIjoic3VrdSIsIkRvYyB2ZXJzaW9uIjoiMS4wLjMiLCJEb2MgTGFuZ3VhZ2UiOiJFbmdsaXNoIiwiRG9jIERpdmlzaW9uIjoiTUNEIiwiRG9jIEJVIjoiV0lSRUQiLCJEb2MgRmFtaWx5IjoiU1NfVVNCIn0=)
 
 
 ## Requirements
 
-- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.4 or later (tested with v3.4)
+- [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) v3.5 or later (tested with v3.5)
 - Board support package (BSP) minimum required version: 4.3.3
 - Programming language: C
 
@@ -31,9 +31,10 @@ This code example demonstrates the implementation of a UVC 1.1 compliant camera 
 
 This example uses the board's default configuration. See the kit user guide to ensure that the board is configured correctly.
 
-This example demonstrates the implementation of a UVC-compliant camera application with [Titanium Ti180 J484 Development Kit](https://www.efinixinc.com/products-devkits-titaniumti180j484.html) as the video source.
+This example demonstrates the implementation of a UVC-compliant camera application with the [Titanium Ti180 J484 Development Kit](https://www.efinixinc.com/products-devkits-titaniumti180j484.html) as the video source.
 
-> **Note:** Titanium Ti180 J484 Development Kit is used for demonstration purpose only. The Ti180 FPGA bit files listed in **Table 4** (see Section [FPGA BitFile information](#fpga-bitfile-information)) supports up to 4K (3840 x 2160) colorbar video streaming.
+> **Note:** The Titanium Ti180 J484 Development Kit is used for demonstration purposes only. The Ti180 FPGA bitfiles listed in **Table 5** of the [FPGA bitfile information](#fpga-bitfile-information) Section supports up to 4K (3840 x 2160) colorbar video streaming.
+
 
 ## Software setup
 
@@ -41,7 +42,9 @@ See the [ModusToolbox&trade; tools package installation guide](https://www.infin
 
 Install a terminal emulator if you do not have one. Instructions in this document use [Tera Term](https://teratermproject.github.io/index-en.html).
 
-This example requires no additional software or tools.
+Install the [EZ-USB&trade; FX Control Center](https://softwaretools.infineon.com/tools/com.ifx.tb.tool.ezusbfxcontrolcenter) application for assistance with device programming and testing.
+
+Install the [Efinity Software](https://www.efinixinc.com/products-efinity.html) application to program the bit file to the FPGA in the Titanium Ti180 J484 Development Kit.
 
 
 ## Using the code example
@@ -138,48 +141,88 @@ For more details, see the [ModusToolbox&trade; tools package user guide](https:/
 </details>
 
 
+### Using this code example with specific manufacturer part numbers (MPNs)
+
+By default, the code example build is targeted for the CYUSB4024-BZXI MPN, which has 512 KB of flash memory and 1024 KB of buffer RAM. Use the **BSP Assistant** tool to modify the application to target different EZ-USB&trade; FX20, EZ-USB&trade; FX10, EZ-USB&trade; FX5N, or EZ-USB&trade; FX5 family MPNs as shown in **Table 1**.
+
+> **Note:** This application utilizes the Quad SPI interface on the EZ-USB&trade; FX device and hence is not supported on CYUSB4022-FCAXI, CYUSB4012-FCAXI, CYUSB3282-FCAXI, and CYUSB3082-FCAXI devices. It also requires more than 512 KB of DMA buffer RAM and hence is not supported on the CYUSB3081-FCAXI device.
+
+**Table 1. MPNs supported by this code example**
+
+Part Number       | Family | Flash size (KB) | Buffer RAM size (KB)
+:---------------- | :----- | :-------------- | :-------------------
+CYUSB4024-BZXI    | FX20   | 512             | 1024
+CYUSB4021-FCAXI   | FX20   | 512             | 1024
+CYUSB4014-FCAXI   | FX10   | 512             | 1024
+CYUSB4013-FCAXI   | FX10   | 512             | 1024
+CYUSB4011-FCAXI   | FX10   | 512             | 1024
+CYUSB3284-FCAXI   | FX5N   | 512             | 1024
+CYUSB3084-FCAXI   | FX5    | 512             | 1024
+CYUSB3083-FCAXI   | FX5    | 512             | 1024
+
+
+#### Setup for a different MPN
+
+Perform the following steps to modify the code example to work on a different MPN, as listed in **Table 1**:
+
+1. Launch the BSP Assistant tool:
+
+   a. **Eclipse IDE:** Launch the BSP Assistant tool by navigating to **Quick Panel** > **Tools**
+
+   b. **Visual Studio Code:** Select the ModusToolbox&trade; extension from the left menu bar and launch the BSP Assistant tool, which is available in the **Application** menu of the **MODUSTOOLBOX TOOLS** section
+
+2. In **BSP Assistant**, select **Devices** from the tree view on the left
+
+3. Choose the desired part from the dropdown menu on the right
+
+4. Click "Save" to close the BSP Assistant tool
+
+5. Build the application and proceed with programming
+
+
 ## Operation
 
-1. Connect the board (J2) to your PC using the provided USB cable. Connect the USB FS port (J3) on the board to the PC for debug logs
+1. Connect the board (J2) to your PC using the provided USB cable
 
-2. Open a terminal program and select the serial COM port. Set the serial port parameters to 8N1 and 921600 baud
+2. Connect the USB FS port (J3) on the board to the PC for debug logs
 
-3. Connect the FPGA (Titanium Ti180 J484 Development Kit) DVK to the FMC (J8) connector of *KIT_FX20_FMC_001* board
+3. Open a terminal program and select the serial COM port. Set the serial port parameters to 8N1 and 921600 baud
 
-4. Browse the **\<CE Title>/BitFiles/** folder for Ti180 FPGA binary and program the FPGA. For more details, see the [J484 kit user guide](https://www.efinixinc.com/products-devkits-titaniumti180j484.html)
+4. Browse the *\<CE Title>/BitFiles/* folder for Ti180 FPGA binary and program the FPGA. For more details, see the [J484 kit user guide](https://www.efinixinc.com/products-devkits-titaniumti180j484.html)
 
-5. Perform the following steps to program the board using the **EZ-USB&trade; FX Control Center** (Alpha) application
+5. After successful programming, switch off the FPGA DVK power, connect the FPGA (Titanium Ti180 J484 Development Kit) DVK to the FMC (J8) connector of the KIT_FX20_FMC_001 board, and switch on the FPGA DVK power
 
-   1. To enter into Bootloader mode:
+6. Perform the following steps to program the board using the EZ-USB&trade; FX Control Center (Alpha) application
 
-         a. Press and hold the **PMODE** (**SW2**) switch<br>
-         b. Press and release the **RESET** (**SW3**) switch<br>
-         c. Finally, release the **PMODE** switch<br>
+   1. To enter Bootloader mode:
 
-   2. Open the **EZ-USB&trade; FX Control Center** application <br>
-      The EZ-USB&trade; FX20 device enumerates as **EZ-USB&trade; FX Bootloader**
+         a. Press and hold the PMODE (SW2) switch
 
-   3. Select the **EZ-USB&trade; FX Bootloader** device in **EZ-USB&trade; FX Control Center**
+         b. Press and release the RESET (SW3) switch
+
+         c. Release the PMODE switch
+
+   2. Open the EZ-USB&trade; FX Control Center application. Observe the EZ-USB&trade; FX20 device displayed as **EZ-USB&trade; FX Bootloader**
+
+   3. Select the **EZ-USB&trade; FX Bootloader** device in EZ-USB&trade; FX Control Center
 
    4. Click **Program** > **Internal Flash**
 
-   5. Navigate to the **\<CE Title>/build/APP_KIT_FX20_FMC_001/Release** folder within the CE directory and locate the *.hex* file and program<br>
-      Confirm if the programming is successful in the log window of the **EZ-USB&trade; FX Control Center** application
+   5. Navigate to the *\<CE Title>/build/APP_KIT_FX20_FMC_001/Release* folder within the CE directory and locate the *.hex* file and program. Confirm if the programming is successful in the log window of the EZ-USB&trade; FX Control Center application
 
-6. After programming, the application starts automatically. Confirm that the following title is displayed on the UART terminal
+7. After programming, the application starts automatically. Confirm the following title is displayed on the UART terminal
 
    **Figure 1. Terminal output on program startup**
 
    ![](images/terminal-fx20-uvc-uac.png)
 
-7. Open any third-party camera application. Select the EZ-USB&trade; FX20 device and video resolution to stream video<br>
-   By default, the device will stream 4K (3840 x 2160 ~60 fps) video data
+7. Open any third-party camera application and select the **EZ-USB&trade; FX20** device and video resolution to stream video. By default, the device streams 4K (3840 x 2160 ~60 fps) video data
 
 
 ## Debugging
 
 
-### Using Arm&reg; debug port
+### Using the Arm&reg; debug port
 
 If you have access to a MiniProg or KitProg3 device, you can debug the example to step through the code.
 
@@ -200,37 +243,34 @@ Follow the instructions in your preferred IDE.
 
 ### Log messages
 
-The code example and the EZ-USB&trade; FX20 stack output debug log messages indicates any unexpected conditions and highlights the operations performed.
+The code example and the EZ-USB&trade; FX20 stack output debug log messages indicate any unexpected conditions and highlight the performed operations.
 
-By default, the USB FS port is enabled for debug logs. To enable debug logs on UART, set the `USBFS_LOGS_ENABLE` compiler flag to '0u' in the *Makefile*. SCB1 of the EZ-USB&trade; FX20 device is used as UART with a baud rate of 921600 to send out log messages through the P8.1 pin.
+By default, the USB FS port is enabled for debug logs. To enable debug logs on UART, set the `USBFS_LOGS_ENABLE` compiler flag to '0u' in the *Makefile* file. SCB1 of the EZ-USB&trade; FX20 device is used as UART with a baud rate of 921600 to send out log messages through the P8.1 pin.
 
-The verbosity of the debug log output can be modified by setting the `DEBUG_LEVEL` macro in *main.c* file with the values shown in **Table 1**.
+The verbosity of the debug log output can be modified by setting the `DEBUG_LEVEL` macro in the *main.c* file with the values shown in **Table 2**.
 
-**Table 1. Debug values**
+**Table 2. Debug values**
 
 Macro value | Description
 :--------   | :------------
 1u          | Enable only error messages
 2u          | Enable error and warning messages
-3u          | Enable info messages
+3u          | Enable error, warning, and info messages
 4u          | Enable all message types
-
-<br>
 
 
 ## Design and implementation
 
-This code example demonstrates the implementation of the USB Video Class specification and the USB Audio Class specification, allowing the EZ-USB&trade; FX20 device to function as a UVC- and UAC-compliant composite device. This allows the video and audio data to be streamed over USB 3.2. This application uses various low-performance peripherals to interface with the system such as:
+This code example demonstrates the implementation of the UVC and UAC specifications, enabling the EZ-USB&trade; FX20 device to function as a UVC- and UAC-compliant composite device. This allows the video and audio data to be streamed over USB 3.2. This application uses various low-performance peripherals to interface with the system, such as:
 
 - I2C master to configure the video source
 - PDM receiver interface to connect audio source
-- SMIF (in x4 or Quad mode) interface for downloading of FPGA configuration binary on every bootup
 - Enable debug prints over CDC using the USBFS block on the EZ-USB&trade; FX20 device
 
 
 ### Features
 
-- **USB specification:** USB 2.0 (High-Speed only) and USB3.2 Gen2/Gen1
+- **USB specification:** USB 2.0 (High-Speed only) and USB 3.2 Gen2/Gen1
 
    > **Note:** UVC and UAC functions are not supported in USB Full-Speed connections
 
@@ -240,48 +280,63 @@ This code example demonstrates the implementation of the USB Video Class specifi
    - **USB3.2 (Gen1/Gen2):** 3840 x 2160 (4K), 1280 x 720 (720p), and 640 x 480 (VGA)
    - **USB2.0 (HS):** 640 x 480 (VGA)
 
-- FPGA configuration using SMIF block. The application supports FPGA configuration in Passive serial (x4) mode only
+- FPGA configuration using SMIF block. The application supports FPGA configuration in passive serial (x4) mode only
 
-> **Note:** This example does not currently implement any UVC control functions, such as brightness, contrast, exposure, etc.
+> **Note:** This example does not currently implement any UVC control functions such as brightness, contrast, or exposure.
 
 This code example demonstrates the following:
-- The usage of the EZ-USB&trade; FX20 APIs to implement a standard USB Video Class device. Handling of class-specific USB control requests at the application level
-- Streaming of video data at USB 3.2 Gen2 speeds (4K video stream at ~60 fps) from the SIP to USB endpoint. A Bulk endpoint is used for video streaming to enable the maximum throughput, which can exceed the maximum that the USB specification allows over Isochronous endpoints
+
+- Using EZ-USB&trade; FX20 APIs to implement a standard UVC device. Handling of class-specific USB control requests at the application level
+
+- Streaming video data at USB 3.2 Gen2 speeds (4K video stream at ~60 fps) from the SIP to USB endpoint. A Bulk endpoint is used for video streaming to enable the maximum throughput, which can exceed the maximum allowed by the USB specification over isochronous endpoints
+
 - FPGA configuration using SMIF Block of the EZ-USB&trade; FX20 device
+
 - I2C register writes to configure FPGA register
 
 
 ### Video/audio streaming data path
 
+
 #### Audio streaming
 
-- The application enables EP 3-IN as Isochronous endpoints with a maximum packet size of 192 bytes
-- The device receives the audio data through the PDM receiver and sends it on EP 3-IN
+- The application enables EP 3-In as an isochronous endpoint with a maximum packet size of 192 bytes
+- The device receives the audio data through the PDM receiver and sends it on EP 3-In
 - Four DMA buffers of size 192 bytes are used to hold the data while it is being forwarded to the USB
 
 
 #### Video streaming
 
-- The application enables EP 1-IN as Bulk endpoints with a maximum packet size of 1024 bytes. In case of USB3.2 Gen1/Gen2, the endpoint is configured to support a maximum burst of 16 packets
-- The device receives the video data through LVDS/LVCMOS Adapter 0 Socket 0 and sends it on EP 1-IN
+- The application enables EP 1-In as a bulk endpoint with a maximum packet size of 1024 bytes. In case of USB3.2 Gen1/Gen2, the endpoint is configured to support a maximum burst of 16 packets
+- The device receives the video data through the LVDS/LVCMOS Adapter 0 Socket 0 and sends it to EP 1-In
 - Four DMA buffers of 64512 bytes size are used to hold the data while it is being forwarded to USB
 
 
-#### Modes of UVC header addition
+#### UVC header addition modes
 
-A 32-byte UVC header is added to each buffer containing 64480 bytes of video data and the resulting 64512 bytes are sent to the USB host. By default, the header addition is performed by a firmware task
-If the FPGA, which drives the SIP interface of EZ-USB&trade; FX20 supports the header addition, the application can be configured to enable FPGA to add the UVC Header; thereby speeding up the streaming operation.
+A 32-byte UVC header is added to each buffer, containing 64480 bytes of video data, and the resulting 64512 bytes are sent to the USB host. By default, the header addition is performed by a firmware task. 
+If the FPGA, which drives the SIP interface of EZ-USB&trade; FX20 supports the header addition, the application can be configured to enable FPGA to add the UVC header, speeding up the streaming operation.
 
-- The firmware adds 32 bytes of UVC header in the data received from the LVCMOS/LVDS side before the data is sent to the USB side on UVC Bulk endpoint 1-IN
-- UVC Header is inserted by FPGA itself. To enable this feature, enable the FPGA_ADDS_HEADER compiler flag in the *Makefile*
-- This example supports UVC header insertion using the LVDS IP. This option can only be used if the FPGA which provides the video data supports `enhanced mode` commands to trigger the UVC Header (metadata) addition. Set `INMD_EN` in **Makefile** to enable this mode
+- The firmware adds 32 bytes of UVC header in the data received from the LVCMOS/LVDS side before the data is sent to the USB side on UVC Bulk endpoint 1-In
+- UVC Header is inserted by the FPGA itself. To enable this feature, enable the `FPGA_ADDS_HEADER` compiler flag in *Makefile*
+- This example supports UVC header insertion using the LVDS IP. This option can only be used if the FPGA which provides the video data supports `enhanced mode` commands to trigger the UVC header (metadata) addition. Set `INMD_EN` in *Makefile* to enable this mode
 
-> **Note:** This example does not currently implement LVCMOS enhance mode to add UVC header.
+> **Note:** This example does not currently implement LVCMOS enhanced mode to add UVC header.
+
+
+#### Internal colorbar generation
+
+The application supports two methods of internal colorbar generation so the USB video stream can be observed and its speed measured in the absence of an FPGA data source. These modes can be tested and used with only the EZ-USB&trade; DX20 DVK.
+
+- The first mode uses the 'Link loopback' feature of the FX20 SIP, which allows a data pattern to be generated and transmitted through one port and received through the other port. In this case, Port 1 is configured in transmit mode and sends data corresponding to a colorbar pattern with 8 colours. Port 0 is configured and operates in the same way as it would be to receive data from an FPGA. It receives the video data, adds the UVC headers through the DMA callbacks, and streams to the USB host. The maximum data rate achievable in this mode of operation is about 6.4 Gbps due to limitations of the clock frequency supported in loopback mode
+
+- The second mode uses a firmware-driven mechanism to stream video data that is prefilled in a set of RAM buffers. The firmware uses the DMA support of the FX20 device to queue transfers from the RAM buffers in the correct order based on the UVC specifications. See the *cy_video_inmem.c* file for implementation details
 
 
 ### Application workflow
 
 The application flow involves three main steps:
+
 - [Initialization](#initialization)
 - [USB device enumeration](#usb-device-enumeration)
 - [UVC data transfer](#uvc-data-transfer)
@@ -292,48 +347,68 @@ The application flow involves three main steps:
 During initialization, the following steps are performed:
 
 1. All the required data structures are initialized
+
 2. USBD and USB driver (CAL) layers are initialized
-3. Application registers all descriptors supported by function/application with the USBD layer
-4. Application registers callback functions for different events, such as `RESET`, `SUSPEND`, `RESUME`, `SET_CONFIGURATION`, `SET_INTERFACE`, `SET_FEATURE`, and `CLEAR_FEATURE`. USBD will call the respective callback function when the corresponding events are detected
-5. Initialize the data transfer state machines
-6. Application registers handlers for all relevant interrupts
-7. Application makes the USB device visible to the host by calling the connect API
-8. FPGA is configured using the SMIF (in x4 or Quad mode) block to read the bit file stored in the external flash. FPGA sees the data on the bus and gets configured
-9. FPGA is initialized using I2C writes to FPGA registers
-10. Application initializes the SIP block on the EZ-USB&trade; FX20 as required by the selected LVCMOS operating mode
+
+3. The application registers all descriptors supported by function/application with the USBD layer
+
+4. The application registers callback functions for different events, such as `RESET`, `SUSPEND`, `RESUME`, `SET_CONFIGURATION`, `SET_INTERFACE`, `SET_FEATURE`, and `CLEAR_FEATURE`. USBD will call the respective callback function when the corresponding events are detected
+
+5. The data transfer state machines are initialized
+
+6. The application registers handlers for all relevant interrupts
+
+7. The application makes the USB device visible to the host by calling the Connect API
+
+8. If FPGA configuration using FX is enabled, FPGA is configured using the SMIF (in x4 or Quad mode) block to read the bit file stored in the external flash. FPGA sees the data on the bus and gets configured
+
+9. The FPGA is initialized using I2C writes to FPGA registers
+
+10. The application initializes the SIP block on the EZ-USB&trade; FX20 as required by the selected LVCMOS operating mode
 
 
 #### USB device enumeration
 
 1. During USB device enumeration, the host requests for descriptors, which are already registered with the USBD layer during the initialization phase
-2. Host will send `SET_CONFIGURATION` command and `SET_INTERFACE` commands to activate the required function in the device
+2. The host sends `SET_CONFIGURATION` and `SET_INTERFACE` commands to activate the required function in the device
 3. After the `SET_CONFIGURATION` and `SET_INTERFACE` commands, the application task takes control and enables the endpoints for data transfer
+
 
 #### UVC data transfer
 
 **Loopback mode (LVDS interface):**
 
-- Loopback program (Video data and control bytes) is stored in HBWSS SRAM
-- Data is moved by Thread 3 to PORT1 through DMA and GPIF
-- Link level loopback is enabled so that the data generated by PORT1 is received by PORT0
-- Data moves from PORT0 to USB 3.x Bulk endpoint-IN through GPIF and DMA
-- Data moves from device Bulk endpoint-IN to Host UVC application
+1. Loopback program (video data and control bytes) is stored in HBWSS SRAM
+2. Data is moved by Thread 3 to Port 1 through DMA and GPIF
+3. Link level loopback is enabled so the data generated by Port 1 is received by Port 0
+4. Data moves from Port 0 to USB 3.x Bulk endpoint-In through GPIF and DMA
+5. Data moves from device Bulk endpoint-In to the host UVC application
+
+
+**Firmware generated (in-memory) mode:**
+
+1. A set of memory buffers are allocated in the high-bandWidth RAM region and prefilled with UVC headers as well as colorbar data
+2. A DMA channel of the `memory-to-IP` type is created to send data from these memory buffers to the USB host
+3. When the `SET_CUR` request to start video streaming is received, video streaming is started by queuing requests to send data from these buffers
+4. Data moves from device Bulk endpoint-In to the host UVC application
+5. When DMA consume events indicating the completion of transfer from each buffer is received, firmware queues additional transfer requests on the endpoint to maintain a continuous data flow
+
 
 **Normal mode:**
 
-- Depending on the compile-time options, LVDS/LVCMOS interface, PORT1/PORT0, and Narrow_Link/Wide_Link are selected
-- After the streaming DMA channel is enabled, the DMA ready flag on the SIP interface asserts and the FPGA data source starts streaming the video data to the EZ-USB&trade; FX20 device
-- Video data moves from the LVDS/LVCMOS subsystem to SRAM through high-bandwidth DMA
-- The data is forwarded on the USBSS or USBHS EP 1-IN, based on the active USB connection speed. DataWire DMA channels are used in the case of USBHS transfers and high-bandwidth DMA channels are used in case of USBSS transfers
-- Video data moves from USB device Bulk endpoint-IN to Host UVC application
+1. Depending on the compile-time options, LVDS/LVCMOS interface, Port 1/Port 0, and Narrow Link/Wide Link are selected
+2. After the streaming DMA channel is enabled, the DMA ready flag on the SIP interface asserts and the FPGA data source starts streaming the video data to the EZ-USB&trade; FX20 device
+3. Video data moves from the LVDS/LVCMOS subsystem to the SRAM through high-bandwidth DMA
+4. The data is forwarded on the USBSS or USBHS EP 1-In, based on the active USB connection speed. DataWire DMA channels are used for USBHS transfers and high-bandwidth DMA channels are used for USBSS transfers
+5. Video data moves from USB device Bulk endpoint-In to the host UVC application
 
 
 #### Integrated UAC data transfer
 
-In addition to the USB video camera interface, this application also implements a USB Audio Class interface, which carries data received from a PDM microphone.
+In addition to the UVC interface, this application also implements a UAC interface, which carries the data received from a PDM microphone.
 
 - P4.1 and P4.2 pins of the EZ-USB&trade; FX20 device are used to interface to the PDM microphone
-- P4.1 is the clock output from the EZ-USB&trade; FX20 device, which will be generated at 3.072 MHz
+- P4.1 is the clock output from the EZ-USB&trade; FX20 device, which is generated at 3.072 MHz
 - P4.2 is the data input from the PDM microphones to the EZ-USB&trade; FX20 device
 
 A pair of microphones in stereo configuration can be connected. By default, the interface is configured for Stereo operation.
@@ -341,31 +416,31 @@ A pair of microphones in stereo configuration can be connected. By default, the 
 
 #### Slave FIFO interface
 
-The code example uses a Synchronous Slave FIFO interface when configured in LVCMOS mode. The Slave FIFO interface connections are as follows:
+The code example uses a synchronous slave FIFO interface when configured in LVCMOS mode. The slave FIFO interface connections are:
 
-**Table 2. Control signal usage in LVCMOS Slave FIFO state machine for PORT0**
+**Table 3. Control signal usage in LVCMOS slave FIFO state machine for Port 0**
 
 EZ-USB&trade; FX pin            | Function            | Description
 :-------------    | :------------       | :--------------
 P0CLK             | PCLK                | LVCMOS clock
-P0CTL0            | SLCS#               | Active LOW Chip Select signal. Assert (LOW) by the master/FPGA when communicating with the EZ-USB&trade; FX device
-P0CTL1            | SLWR#               | Active LOW Write Enable signal. Asserted (LOW) by the master/FPGA when sending any data to the EZ-USB&trade; FX device
-P0CTL2            | SLOE#               | Active LOW Output Enable signal
-POCTL3            | SLRD#               | Active LOW Read Enable signal. Not used in this application as data is only being received by the EZ-USB&trade; FX device
-POCTL5            | FlagA               | Active LOW DMA ready indication for currently addressed/active thread
-POCTL6            | Link Ready          | Active HIGH Link ready indication for respective Link/Port
-POCTL7            | PKTEND#             | Active LOW Packet End signal. Assert (LOW) when the FPGA/master wants to terminate the ongoing DMA transfer
-P0CTL9            | A0                  | LS bit of 2-bit address bus used to select thread (applicable for PORT0 Narrow Link)
-P0CTL8            | A1                  | MS bit of 2-bit address bus used to select thread (applicable for PORT0 Narrow Link) 
-P1CTL9            | A0                  | LS bit of 2-bit address bus used to select thread (applicable for PORT0 WideLink)
-P1CTL8            | A1                  | MS bit of 2-bit address bus used to select thread (Applicable for PORT0 WideLink)
+P0CTL0            | SLCS#               | Active low chip select signal. Asserted (low) by the master/FPGA when communicating with the EZ-USB&trade; FX device
+P0CTL1            | SLWR#               | Active low write enable signal. Asserted (low) by the master/FPGA when sending any data to the EZ-USB&trade; FX device
+P0CTL2            | SLOE#               | Active low output enable signal
+P0CTL3            | SLRD#               | Active low read enable signal. Not used in this application as data is only being received by the EZ-USB&trade; FX device
+P0CTL5            | FlagA               | Active low DMA ready indication for currently addressed/active thread
+P0CTL6            | Link Ready          | Active high Link ready indication for respective link/port
+P0CTL7            | PKTEND#             | Active low packet end signal. Asserted (low) when the FPGA/master wants to terminate the ongoing DMA transfer
+P0CTL9            | A0                  | LS bit of 2-bit address bus used to select thread (applicable for Port 0 Narrow Link)
+P0CTL8            | A1                  | MS bit of 2-bit address bus used to select thread (applicable for Port 0 Narrow Link)
+P1CTL9            | A0                  | LS bit of 2-bit address bus used to select thread (applicable for Port 0 WideLink)
+P1CTL8            | A1                  | MS bit of 2-bit address bus used to select thread (Applicable for Port 0 WideLink)
 
-> **Note:** PORT1 Narrow Link has the same address lines as WideLink.
+> **Note:** Port 1 Narrow Link has the same address lines as that of WideLink.
 
 
 ## Compile-time configurations
 
-Application functionality can be customized by setting variables in *Makefile* or by configuring them through `make` CLI arguments.
+This application's functionality can be customized by setting variables in *Makefile* or by configuring them through `make` CLI arguments.
 
 - Run the `make build` command or build the project in your IDE to compile the application and generate a USB bootloader-compatible binary. This binary can be programmed onto the EZ-USB&trade; FX20 device using the EZ-USB&trade; Control Center application
 
@@ -373,94 +448,114 @@ Application functionality can be customized by setting variables in *Makefile* o
 
 - Choose between the **Arm&reg; Compiler** or the **GNU Arm&reg; Embedded Compiler** build toolchains by setting the `TOOLCHAIN` variable in *Makefile* to `ARM` or `GCC_ARM` respectively. If you set it to `ARM`, ensure to set `CY_ARM_COMPILER_DIR` as a make variable or environment variable, pointing to the path of the compiler's root directory
 
-- Run the `make build LPBK_EN=yes` command or set the variable in *Makefile* to make the application use an internally-generated colorbar pattern for streaming instead of an external video source. This configuration can be used on the EZ-USB&trade; FX20 DVK without requiring any additional boards or connections
-> **Note:** The internal data path used for this function has throughput limitations and can only support about 48 frames per second of a 4K video stream. Using an external video source is required to achieve the data rates enabled by the USB 3.2 Gen2 data connection.
+- Run the `make build LPBK_EN=yes` command or set the variable in *Makefile* to make the application use the LVDS link loopback feature to send colorbar data to sensor interface Port 0. This configuration can be used on the EZ-USB&trade; FX20 DVK without requiring any additional boards or connections
+
+   > **Note:** The internal data path used for this function has throughput limitations and can only support about 48 frames per second of a 4K video stream. Using an external video source is required to achieve the data rates enabled by the USB 3.2 Gen2 data connection.
+
+- Run the `make build FWGEN=yes` command or set the variable in *Makefile* to make the application stream data from the prefilled RAM buffers based on a firmware sequence. This configuration can also be used on the EZ-USB&trade; FX20 DVK without requiring any additional boards or connections
 
 By default, the application is configured to receive data from a 32-bit wide LVCMOS interface in DDR mode and make a USB 3.2 Gen2x2 (20 Gbps) data connection. Additional settings can be configured through macros specified by the `DEFINES` variable in *Makefile*:
 
-**Table 3. Macro description** 
+**Table 4. Macro description**
 
 Macro name           |    Description                           | Allowed values
 :-------------       | :------------                            | :--------------
-*USB_CONN_TYPE*      | Choose USB connection speed from amongst a set of options | '`CY_USBD_USB_DEV_SS_GEN2X2`' for USB 3.2 Gen2x2<br>'`CY_USBD_USB_DEV_SS_GEN2`' for USB 3.2 Gen2x1<br>'`CY_USBD_USB_DEV_SS_GEN1X2`' for USB 3.2 Gen1x2<br>'`CY_USBD_USB_DEV_SS_GEN1`' for USB 3.2 Gen1x1<br>'`CY_USBD_USB_DEV_HS`' for USB 2.0 HS<br>'`CY_USBD_USB_DEV_FS`' for USB 1.1 FS
-*LVDS_LB_EN*         | Enable link loopback                     | '1u' to enable Link loopback <br> '0u' for disable
-*LVCMOS_EN*          | Select the LVCMOS/LVDS                   | '1u' for LVCMOS <br> '0u' for LVDS
-*LVCMOS_DDR_EN*      | Select LVCMOS clock configuration        | '1u' for LVCMOS DDR clock <br> '0u' to select LVCMOS SDR
-*WL_EN*              | Select the WideLink or Narro Link       | '1u' for 32-bit/WideLink <br> '0u' for Narrow Link
-*PORT1_EN*           | Select LVCMOS/LVDS port                  | '1u' to selecting PORT1 <br> '0u' to select PORT0
-*INTERLEAVE_EN*      | Enable thread interleave PORT0           | '1u' to enable thread interleaving on PORT0 <br> '0u' to select single thread
-*FPGA_ENABLE*        | Select FPGA as data source               | '1u' if FPGA is interfaced to the EZ-USB&trade; FX20 <br> '0u' for to disable FPGA interface
-*FPGA_ADDS_HEADER*   | UVC header addition                      | '1u' for FPGA added header <br> '0u' for EZ-USB&trade; FX20 added header
-*INMD_EN*            | Insert metadata                          | '1u' for enabling insert metadata <br> '0u' for disabling insert metadata
-*AUDIO_IF_EN*        | Enable integrated UAC function           | '1u' to enabled <br> '0u' to disable
-*USBFS_LOGS_ENABLE*  | Enable debug logs through USBFS port     | '1u' for debug logs over USBFS <br> '0u' for debug logs over UART (SCB1)
-*USB3_LPM_ENABLE*    | Enable USB LPM handling                  | '1u' for enabling USB LPM handling <br> '0u' for disabling LPM
+`USB_CONN_TYPE`      | Choose USB connection speed from a set of options | `CY_USBD_USB_DEV_SS_GEN2X2` for USB 3.2 Gen2x2 <br> `CY_USBD_USB_DEV_SS_GEN2` for USB 3.2 Gen2x1 <br> `CY_USBD_USB_DEV_SS_GEN1X2` for USB 3.2 Gen1x2 <br> `CY_USBD_USB_DEV_SS_GEN1` for USB 3.2 Gen1x1 <br> `CY_USBD_USB_DEV_HS` for USB 2.0 HS<br> `CY_USBD_USB_DEV_FS` for USB 1.1 FS
+`LVDS_LB_EN`         | Enable link loopback                     | '1u' to enable link loopback <br> '0u' for disable
+`LVCMOS_EN`          | Select the LVCMOS/LVDS                   | '1u' for LVCMOS <br> '0u' for LVDS
+`LVCMOS_DDR_EN`      | Select LVCMOS clock configuration        | '1u' for LVCMOS DDR clock <br> '0u' to select LVCMOS SDR
+`WL_EN`              | Select the WideLink or Narrow Link       | '1u' for 32-bit/WideLink <br> '0u' for Narrow Link
+`PORT1_EN`           | Select LVCMOS/LVDS port                  | '1u' to selecting Port 1 <br> '0u' to select Port 0
+`INTERLEAVE_EN`      | Enable thread interleave Port 0          | '1u' to enable thread interleaving on Port 0 <br> '0u' to select single thread
+`FPGA_ENABLE`        | Select FPGA as data source               | '1u' if FPGA is interfaced to the EZ-USB&trade; FX20 <br> '0u' for to disable FPGA interface
+`FPGA_ADDS_HEADER`   | UVC header addition                      | '1u' for FPGA added header <br> '0u' for EZ-USB&trade; FX20 added header
+`INMD_EN`            | Insert metadata                          | '1u' to enable insert metadata <br> '0u' to disable insert metadata
+`AUDIO_IF_EN`        | Enable integrated UAC function           | '1u' to enable <br> '0u' to disable
+`USBFS_LOGS_ENABLE`  | Enable debug logs through USBFS port     | '1u' for debug logs over USBFS <br> '0u' for debug logs over UART (SCB1)
+`USB3_LPM_ENABLE`    | Enable USB LPM handling                  | '1u' to enable USB LPM handling <br> '0u' to disable LPM
+`FPGA_CONFIG_EN`     | Enable FPGA configuration                | '1u' to enable FPGA configuration by FX <br> '0u' to disable FPGA configuration using FX device
 
-<br>
-
-
-### FPGA BitFile information
-
-The FPGA binary in the *BitFile* folder of the project can be programmed to the external flash on the EZ-USB&trade; FX20 DVK using the **EZ-USB&trade; FX20 USB Bootloader**. Perform the following steps to program the binary file to the external flash.
-
-> **Note:** The following steps are assuming that the device is pre-programmed with the **EZ-USB&trade; FX20 USB Bootloader**.
-
-1. Open the **EZ-USB&trade; FX Control Center** application
-2. Navigate to **Program** > **External Flash** and browse the FPGA binary file
-3. Check the programming status
-
-**Table 4. BitFile description**
-
-BitFile                                                   | Description                   | Supported features
-:-------------                                            | :------------                 | :------------  
-*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_ddr_nl_p1.hex*    | LVCMOS Port1 Narrow Link DDR  | PORT 1 Single Thread, FPGA added header
-*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_sdr_nl_p1.hex*    | LVCMOS Port1 Narrow Link SDR  | PORT 1 Single Thread
-*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_ddr_nl_p0.hex*    | LVCMOS Port0 Narrow Link DDR  | PORT 0 Single Thread, PORT 0 Thread Interleave, FPGA added header
-*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_ddr_wl.hex*       | LVCMOS WideLink DDR          | PORT 0 Single Thread, FPGA added header
-*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_sdr_wl*           | LVCMOS WideLink SDR          | PORT 0 Single Thread, PORT 0 Thread Interleave, FPGA added header
-*fxn_ti180_dvk_multi_cam_ref_des_lvds_wl_148m_inmd*       | LVDS WideLink with INMD       | PORT 0 Single Thread, INMD added header
-*fxn_ti180_dvk_multi_cam_ref_des_lvds_nl_p0_148m*         | LVDS Port0 Narrow Link        | PORT 0 Single Thread, FPGA added header
-
-<br>
 
 ## FPGA configuration
 
-FPGA configuration is done using the SMIF block of FX. SMIF (in x4 or Quad mode) interface is used for downloading the FPGA configuration binary on every bootup. FPGA binary files supports passive serial x4 configuration mode.
+### FPGA configuration using the Efinix tool
 
-Steps to configure FPGA (in Passive serial x4 mode):
+Ti180 FPGA can be configured using the Efinity tool. For more details, see the [J484 kit user guide](https://www.efinixinc.com/products-devkits-titaniumti180j484.html). 
 
-- EZ-USB&trade; FX device deasserts INT_RESET pin
-- EZ-USB&trade; FX device starts sending dummy SMIF (in x4 or Quad mode) clock to read the FPGA BitFile from SPI flash
-- FPGA listens to the data on the SMIF lines and configures itself
-- FPGA asserts CDONE# when configuration is complete
+On every bootup, EZ-USB&trade; FX deasserts the INT_RESET pin.
 
-**Table 5. GPIOs for configuring FPGA on KIT_FX20_FMC_001 DVK**
+**Table 5. GPIO for checking FPGA configuration on KIT_FX20_FMC_001 DVK**
 
 EZ-USB&trade; FX20 pin          | Function            | Description
 :-------------                  | :------------       | :--------------
-P4_4                            | CDONE#              | Active HIGH signal. FPGA asserts when FPGA configuration is completed
-P4_3                            | INT_RESET#          | Active LOW signal. EZ-USB&trade; FX device asserts to reset the FPGA
-P6_4                            | PROG#               | Active LOW FPGA program signal
+P4_3                            | INT_RESET#          | Active low signal. EZ-USB&trade; FX device asserts to reset the FPGA
+P4_4                            | CDONE#              | Active high signal. FPGA asserts when FPGA configuration is complete
+
+
+### FPGA configuration using the EZ-USB&trade; FX device
+
+The code example supports FPGA configuration. To enable FPGA configuration using EZ-USB&trade; FX, set `FPGA_CONFIG_EN` in **Makefile** to '1u'. 
+
+The FPGA binary in the *BitFile* folder of the project can be programmed to the external flash on the EZ-USB&trade; FX20 DVK using the EZ-USB&trade; FX20 USB Bootloader. Perform the following steps to program the binary file to the external flash:
+
+> **Note:** The following steps are assuming the device is pre-programmed with the EZ-USB&trade; FX20 USB Bootloader.
+
+1. Open the EZ-USB&trade; FX Control Center application
+2. Navigate to **Program** > **External Flash** and browse the FPGA binary file
+3. Check the programming status
+
+FPGA configuration can be performed using the SMIF block of FX. The SMIF (in x4 or Quad mode) interface is used for downloading the FPGA configuration binary on every bootup. FPGA binary files support passive serial x4 configuration mode.
+
+Steps to configure FPGA (in passive serial x4 mode):
+
+1. EZ-USB&trade; FX deasserts the INT_RESET pin
+2. EZ-USB&trade; FX starts sending dummy SMIF (in x4 or Quad mode) clock to read the FPGA bitfile from the SPI flash
+3. FPGA listens to the data on the SMIF lines and configures itself
+4. FPGA asserts CDONE# when the configuration is complete
+
+**Table 6. GPIOs for configuring FPGA on KIT_FX20_FMC_001 DVK**
+
+EZ-USB&trade; FX20 pin | Function      | Description
+:-------------         | :------------ | :--------------
+P4_4                   | CDONE#        | Active high signal; FPGA asserts when FPGA configuration is completed
+P4_3                   | INT_RESET#    | Active low signal; EZ-USB&trade; FX asserts to reset the FPGA
+P6_4                   | PROG#         | Active low FPGA program signal
+
+
+### FPGA bitfile information
+
+**Table 7. Bitfile description**
+Bitfile                                                   | Description                   | Supported features
+:-------------                                            | :------------                 | :------------  
+*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_ddr_nl_p1.hex*    | LVCMOS Port 1 Narrow Link DDR | Port 1 Single Thread, FPGA added header
+*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_sdr_nl_p1.hex*    | LVCMOS Port 1 Narrow Link SDR | Port 1 Single Thread
+*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_ddr_nl_p0.hex*    | LVCMOS Port 0 Narrow Link DDR | Port 0 Single Thread, PORT 0 Thread Interleave, FPGA added header
+*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_ddr_wl.hex*       | LVCMOS WideLink DDR           | Port 0 Single Thread, FPGA added header
+*fxn_ti180_dvk_multi_cam_ref_des_lvcmos_sdr_wl*           | LVCMOS WideLink SDR           | Port 0 Single Thread, PORT 0 Thread Interleave, FPGA added header
+*fxn_ti180_dvk_multi_cam_ref_des_lvds_wl_148m_inmd*       | LVDS WideLink with INMD       | Port 0 Single Thread, INMD added header
+*fxn_ti180_dvk_multi_cam_ref_des_lvds_nl_p0_148m*         | LVDS Port 0 Narrow Link       | Port 0 Single Thread, FPGA added header
+
 
 
 ## Application files
 
-**Table 6. Application file description**
+**Table 8. Application file description**
 
-File                                              |    Description   
-:-------------                                    | :------------                
+File                                              |    Description
+:-------------                                    | :------------
 *gpif_header_lvcmos.h*                            | Generated header file for GPIF state configuration for LVCMOS interface
 *gpif_header_lvds.h*                              | Generated header file for GPIF state configuration for LVDS interface
 *cy_usb_app.c*                                    | C source file implementing UVC 1.1 application logic
 *cy_usb_app.h*                                    | Header file for application data structures and functions declaration
 *cy_usb_uvc_device.h*                             | Header file with UVC application constants and the video frame configurations
 *cy_usb_descriptors.c*                            | C source file containing the USB descriptors
-*main.c*                                          | Source file for device initialization, ISRs, LVCMOS/LVDS interface initialization, etc.
+*main.c*                                          | Source file for device initialization, ISRs, and LVCMOS/LVDS interface initialization, etc.
 *cy_uac_app.c*                                    | C source file with UAC interface handlers
 *cy_usb_i2c.c*                                    | C source file with I2C handlers
 *cy_usb_i2c.h*                                    | Header file with I2C application constants and the function definitions
 *cy_usb_qspi.c*                                   | C source file with SMIF handlers and FPGA configuration functions
 *cy_usb_qspi.h*                                   | Header file with SMIF application constants and the function definitions
+*cy_video_inmem.c*                                | C source file which implements the logic for streaming video from memory
 *cm0_code.c*                                      | CM0 initialization code
 *Makefile*                                        | GNU make compliant build script for compiling this example
 
@@ -476,7 +571,7 @@ Code examples  | [Using ModusToolbox&trade;](https://github.com/Infineon/Code-Ex
 Device documentation | [EZ-USB&trade; FX20 datasheets](https://www.infineon.com/fx20)
 Development kits | Select your kits from the [Evaluation board finder](https://www.infineon.com/cms/en/design-support/finder-selection-tools/product-finder/evaluation-board)
 Libraries on GitHub  | [mtb-pdl-cat1](https://github.com/Infineon/mtb-pdl-cat1) – Peripheral Driver Library (PDL)
-Middleware on GitHub | [usbfxstack](https://github.com/Infineon/usbfxstack) – USBFXStack middleware library and docs
+Middleware on GitHub  | [usbfxstack](https://github.com/Infineon/usbfxstack) – USBFX Stack middleware library and documents
 Tools  | [ModusToolbox&trade;](https://www.infineon.com/modustoolbox) – ModusToolbox&trade; software is a collection of easy-to-use libraries and tools enabling rapid development with Infineon MCUs for applications ranging from wireless and cloud-connected systems, edge AI/ML, embedded sense and control, to wired USB connectivity using PSOC&trade; Industrial/IoT MCUs, AIROC&trade; Wi-Fi and Bluetooth&reg; connectivity devices, XMC&trade; Industrial MCUs, and EZ-USB&trade;/EZ-PD&trade; wired connectivity controllers. ModusToolbox&trade; incorporates a comprehensive set of BSPs, HAL, libraries, configuration tools, and provides support for industry-standard IDEs to fast-track your embedded application development
 
 <br>
@@ -494,8 +589,10 @@ Document title: *CE240865* – *EZ-USB&trade; FX20: USB Video Class (UVC) applic
  Version | Description of change
  ------- | ---------------------
  1.0.0   | New code example
- 1.0.1   | Updated to use USBFXStack version 1.1 from GitHub
- 1.0.2   | Updated to use USBFXStack version 1.2 from GitHub
+ 1.0.1   | Updated to use USBFXStack v1.1 from GitHub
+ 1.0.2   | Updated to use USBFXStack v1.2 from GitHub
+ 1.0.3   | Updated to use USBFXStack v1.3 from GitHub <br> Added capability to stream data from RAM buffers <br> Enabled porting of application to other EZ-USB&trade; FX devices
+
 <br>
 
 

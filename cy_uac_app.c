@@ -37,7 +37,6 @@
 #include "cy_debug.h"
 
 #if AUDIO_IF_EN
-#define STEREO_ENABLE  (1)
 
 /* Set to 1 to enable internal test data generation instead of connection to the PDM microphone. */
 #define PDM_TEST_GEN_EN (0u)
@@ -89,6 +88,9 @@ void Cy_PDM_AppMxPdmInit (void)
     Cy_GPIO_Pin_Init(P4_2_PORT, P4_2_PIN, &pinCfg);
 
     memset ((uint8_t *)&pdm_conf, 0, sizeof(pdm_conf));
+
+    /* Set divider for HFCLK[3] to 1 to make sure PDM block is getting input at 24 MHz. */
+    Cy_SysClk_ClkHfSetDivider(3, CY_SYSCLK_CLKHF_NO_DIVIDE);
 
     /* clk_pdm runs at 1/8 the frequency of clk_if. */
     pdm_conf.clkDiv = 7;
@@ -427,8 +429,8 @@ void Cy_PDM_AppQueueRead (cy_stc_usb_app_ctxt_t *pAppCtxt,
     /*
      * Each PCM sample read from the FIFO is of 16 bits.
      * The PCM FIFO depth is only 64 entries. We read 32 bytes of data (16 samples) out from the FIFO
-     * whenever, the FIFO has at least 16 samples of data in it. Three such reads are required to fill
-     * one packet of 96 bytes which will be sent to the USB host as one packet.
+     * whenever, the FIFO has at least 16 samples of data in it. Multiple such reads are required to fill
+     * one packet of UAC_EP_MAX_PKT_SIZE bytes which will be sent to the USB host as one packet.
      *
      * In stereo mode, we start reading from both RX FIFO in parallel with two different DataWire
      * channels.
@@ -610,7 +612,7 @@ void Cy_UAC_AppDeviceTaskHandler (void *pTaskParam)
                     Cy_SysLib_ExitCriticalSection(intMask);
 
                     /* Queue read from the UART RX FIFO into the next DMA buffer. */
-                    Cy_PDM_AppQueueRead(pAppCtxt, 96);
+                    Cy_PDM_AppQueueRead(pAppCtxt, UAC_EP_MAX_PKT_SIZE);
                 } else {
                     Cy_SysLib_ExitCriticalSection(intMask);
                 }
@@ -620,7 +622,7 @@ void Cy_UAC_AppDeviceTaskHandler (void *pTaskParam)
                 /* Data has been consumed on USB side and buffer is free now. */
                 if (pAppCtxt->pdmRxFreeBufCount == 0) {
                     /* Queue read from the UART RX FIFO into the next DMA buffer. */
-                    Cy_PDM_AppQueueRead(pAppCtxt, 96);
+                    Cy_PDM_AppQueueRead(pAppCtxt, UAC_EP_MAX_PKT_SIZE);
                 }
 
                 pAppCtxt->pdmRxFreeBufCount++;
@@ -719,10 +721,20 @@ void Cy_UAC_AppSetIntfHandler (cy_stc_usb_app_ctxt_t *pAppCtxt,
             }
             endpNumber = (uint32_t)((*(pEndpDscr + CY_USB_ENDP_DSCR_OFFSET_ADDRESS)) & 0x7F);
 
+            if (pUsbdCtxt->devSpeed >= CY_USBD_USB_DEV_SS_GEN1) {
+                Cy_USBSS_Cal_ClkStopOnEpRstEnable(pUsbdCtxt->pSsCalCtxt, true);
+            }
+
             /* Flush, reset and then disable the endpoint. */
             Cy_USBD_FlushEndp(pUsbdCtxt, endpNumber, endpDirection);
             Cy_USBD_ResetEndp(pUsbdCtxt, endpNumber, endpDirection, false);
             Cy_USBD_EnableEndp(pUsbdCtxt, endpNumber, endpDirection, false);
+
+            if (pUsbdCtxt->devSpeed >= CY_USBD_USB_DEV_SS_GEN1) {
+                Cy_USBSS_Cal_ClkStopOnEpRstEnable(pUsbdCtxt->pSsCalCtxt, false);
+                Cy_SysLib_Delay(1);
+            }
+
             numOfEndp--;
 
             /* Move to the next endpoint descriptor. */
@@ -785,7 +797,7 @@ void Cy_UAC_AppSetIntfHandler (cy_stc_usb_app_ctxt_t *pAppCtxt,
         Cy_USB_AppInitDmaIntr(UAC_IN_ENDPOINT, CY_USB_ENDP_DIR_IN, Cy_PDM_InEpDma_ISR);
 
         /* Queue the first read from the PDM receive FIFOs. */
-        Cy_PDM_AppQueueRead(pAppCtxt, 96);
+        Cy_PDM_AppQueueRead(pAppCtxt, UAC_EP_MAX_PKT_SIZE);
 
         /* Start a timer which will activate the PDM receive channels after some time. */
         xTimerReset(pAppCtxt->pdmActivateTimer, 0);

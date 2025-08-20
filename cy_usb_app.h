@@ -111,6 +111,7 @@ extern "C" {
 #define UVC_HEADER_BY_FX                (1)
 #define AUTO_DMA_CHANNEL                (!MANUAL_DMA_CHANNEL)
 #define UVC_HEADER_BY_FPGA              (AUTO_DMA_CHANNEL || (!UVC_HEADER_BY_FX))
+
 #endif /*LVDS_LB_EN*/
 
 #if (LVDS_LB_EN && FPGA_ENABLE)
@@ -131,7 +132,7 @@ extern "C" {
 
 #if (FPGA_ADDS_HEADER && INMD_EN)
 #error LOG_COLOR(RED, "INVALID: FPGA_ADDS_HEADER WITH INMD_EN");
-#endif /* LVDS_LB_EN && INMD_EN */
+#endif /* FPGA_ADDS_HEADER && INMD_EN */
 
 #if ((!WL_EN) && INMD_EN)
 #error LOG_COLOR(RED, "INVALID: INMD WITH NARROW LINK");
@@ -154,9 +155,15 @@ extern "C" {
 #endif
 
 /* GPIO port pins*/
-#define TI180_CRESET_GPIO               (P4_3_GPIO)
-#define TI180_CRESET_GPIO_PORT          (P4_3_PORT)
-#define TI180_CRESET_GPIO_PIN           (P4_3_PIN)
+#define TI180_INIT_RESET_GPIO           (P4_3_GPIO)
+#define TI180_INIT_RESET_PORT           (P4_3_PORT)
+#define TI180_INIT_RESET_PIN            (P4_3_PIN)
+
+#define TI180_CDONE_PIN                 (P4_4_PIN)
+#define TI180_CDONE_PORT                (P4_4_PORT)
+
+#define CDONE_WAIT_TIMEOUT              (1000)
+
 
 #define ASSERT(condition, value)        Cy_CheckStatus(__func__, __LINE__, condition, value, true);
 #define ASSERT_NON_BLOCK(condition, value) Cy_CheckStatus(__func__, __LINE__, condition, value, false);
@@ -264,7 +271,6 @@ struct cy_stc_usb_app_ctxt_
 
     TimerHandle_t fpsTimer;
     uint8_t fpgaVersion;
-    uint8_t glpassiveSerialMode;
     uint8_t *qspiWriteBuffer;
     uint8_t *qspiReadBuffer;
 
@@ -870,7 +876,7 @@ void CyApp_RegisterUsbDescriptors(cy_stc_usb_app_ctxt_t *pAppCtxt, cy_en_usb_spe
 
 /*******************************************************************************
 * Function name: Cy_USB_AppQueueWrite(cy_stc_usb_app_ctxt_t *pAppCtxt, uint8_t endpNumber,
-                          uint8_t *pBuffer, uint16_t dataSize)
+                          uint8_t *pBuffer, uint32_t dataSize)
 ****************************************************************************//**
 *
 * Queue USBHS Write on the USB endpoint
@@ -891,57 +897,7 @@ void CyApp_RegisterUsbDescriptors(cy_stc_usb_app_ctxt_t *pAppCtxt, cy_en_usb_spe
 * None
 *
 ********************************************************************************/
-void Cy_USB_AppQueueWrite(cy_stc_usb_app_ctxt_t *pAppCtxt, uint8_t endpNumber, uint8_t *pBuffer, uint16_t dataSize);
-
-/*******************************************************************************
-* Function name: Cy_USB_AppQueueRead(void *pAppCtxt, uint8_t endpNumber,
-                                    uint8_t *pBuffer, uint16_t dataSize)
-****************************************************************************//**
-*
-* Function to queue read operation on an OUT endpoint.
-*
-* \param pAppCtxt
-* application layer context pointer.
-*
-* \param endpNumber
-* USB endpoint number
-*
-* \param pBuffer
-* data buffer pointer
-*
-* \param dataSize
-* data size
-*
-* \return
-* None
-*
-********************************************************************************/
-void Cy_USB_AppQueueRead (cy_stc_usb_app_ctxt_t *pAppCtxt, uint8_t endpNumber, uint8_t *pBuffer, uint16_t dataSize);
-
-/*******************************************************************************
-* Function name: Cy_USB_AppReadShortPacket(void *pAppCtxt, uint8_t endpNumber,
-                                    uint16_t pktSize)
-****************************************************************************//**
-*
-* Function to modify an ongoing DMA read operation to take care of a short packet.
-*
-* \param pAppCtxt
-* application layer context pointer.
-*
-* \param endpNumber
-* USB endpoint number
-*
-* \param pktSize
-* data packet size
-*
-*
-* \return
-* Total size of data in the DMA buffer including data which was already read by the channel
-*
-********************************************************************************/ 
-uint16_t Cy_USB_AppReadShortPacket(cy_stc_usb_app_ctxt_t *pAppCtxt, uint8_t endpNumber, uint16_t pktSize);
-
-
+void Cy_USB_AppQueueWrite(cy_stc_usb_app_ctxt_t *pAppCtxt, uint8_t endpNumber, uint8_t *pBuffer, uint32_t dataSize);
 
 /*******************************************************************************
 * Function name: Cy_USB_AppInitDmaIntr(uint32_t endpNumber, cy_en_usb_endp_dir_t endpDirection,
@@ -1332,6 +1288,118 @@ void Cy_CheckStatusAndHandleFailure(const char *function, uint32_t line, uint8_t
 *  0 for read success, error code for unsuccess.
 *****************************************************************************/
 cy_en_scb_i2c_status_t Cy_FPGAPhyLnkTraining (void);
+
+/******************************************************************************
+ * Function Name: Cy_UvcInMem_AllocateBuffers
+ ******************************************************************************
+ *
+ * Allocate the DMA buffers used to hold the colorbar data which is repeatedly
+ * sent when UVC streaming from internal memory is enabled.
+ *
+ * \param pAppCtxt
+ * Pointer to UVC application context structure.
+ *
+ * \return
+ * true if allocation is successful, false otherwise.
+ *****************************************************************************/
+bool
+Cy_UvcInMem_AllocateBuffers(
+        cy_stc_usb_app_ctxt_t *pAppCtxt);
+
+/******************************************************************************
+ * Function Name: Cy_UvcInMem_PrepareBuffers
+ ******************************************************************************
+ *
+ * Fill the pre-allocated RAM buffers with the UVC header and colorbar video
+ * data. Also updates the DMA descriptors in the streaming DMA channel to
+ * point to these RAM buffers.
+ *
+ * \param pAppCtxt
+ * Pointer to UVC application context structure.
+ *
+ * \param pChannel
+ * Handle to the UVC streaming channel.
+ *
+ * \return
+ * true if buffer updates are successful, false otherwise.
+ *****************************************************************************/
+bool
+Cy_UvcInMem_PrepareBuffers(
+        cy_stc_usb_app_ctxt_t  *pAppCtxt,
+        cy_stc_hbdma_channel_t *pChannel);
+
+/******************************************************************************
+ * Function Name: Cy_UvcInMem_ClearBufPointers
+ ******************************************************************************
+ *
+ * Clear the buffer pointers in all descriptors associated with the UVC streaming
+ * channel before the channel is destroyed. This ensures that the DMA buffers
+ * are not freed when the channel gets destroyed.
+ *
+ * \param pAppCtxt
+ * Pointer to UVC application context structure.
+ *
+ * \param pChannel
+ * Handle to the UVC video streaming DMA channel.
+ *
+ * \return
+ * true if the operation is successful, false otherwise.
+ *****************************************************************************/
+bool
+Cy_UvcInMem_ClearBufPointers(
+        cy_stc_usb_app_ctxt_t  *pAppCtxt,
+        cy_stc_hbdma_channel_t *pChannel);
+
+/******************************************************************************
+ * Function Name: Cy_UvcInMem_CommitBuffers
+ ******************************************************************************
+ *
+ * Start the video stream from the pre-filled RAM buffers by committing all
+ * available descriptors in the DMA channel.
+ *
+ * \param pAppCtxt
+ * Pointer to UVC application context structure.
+ *
+ * \param pChannel
+ * Handle to the UVC video streaming DMA channel.
+ *
+ * \param frmIndex
+ * Index of the currently selected video frame.
+ *
+ *****************************************************************************/
+void Cy_UvcInMem_CommitBuffers(
+        cy_stc_usb_app_ctxt_t  *pAppCtxt,
+        cy_stc_hbdma_channel_t *pChannel,
+        uint8_t                 frmIndex);
+
+/******************************************************************************
+ * Function Name: Cy_UvcInMem_DmaCallback
+ ******************************************************************************
+ *
+ * Callback function which gets invoked whenever the device has finished
+ * sending one of the RAM buffers with pre-filled video data. This function queues
+ * the buffer for transfer again so that we have a continuous pipeline of buffers
+ * ready for transfer.
+ *
+ * \param handle
+ * Handle to the UVC video streaming DMA channel.
+ *
+ * \param type
+ * Type of DMA event (can only be a consume event).
+ *
+ * \param pbufStat
+ * Buffer status associated with the event. Not used in this implementation.
+ *
+ * \param userCtx
+ * Application context passed back to the callback as an opaque pointer.
+ *
+ *****************************************************************************/
+void
+Cy_UvcInMem_DmaCallback(
+        cy_stc_hbdma_channel_t      *handle,
+        cy_en_hbdma_cb_type_t       type,
+        cy_stc_hbdma_buff_status_t *pbufStat,
+        void                       *userCtx);
 
 #if defined(__cplusplus)
 }

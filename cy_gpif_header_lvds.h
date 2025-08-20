@@ -20,6 +20,9 @@
 extern "C" {
 #endif
 
+#define START_STATE_ID    (0)
+#define ALPHA_START_STATE (0x00)
+
 const cy_stc_lvds_gpif_wavedata_t cy_lvds_gpif0_wavedata[] = {
     {{0x2E4F4701,0x0040010A,0x80000000,0x00000005},{0x00000000,0x00000000,0x00000000,0x00000000}},
     {{0x3E734702,0x20400000,0x80000000,0x00000001},{0x1E739E03,0x00400008,0x80000000,0x00000000}},
@@ -306,6 +309,13 @@ cy_stc_lvds_phy_config_t cy_lvds_phy1_config =
     .dataBusDirection    = CY_LVDS_PHY_AD_BUS_DIR_INPUT,
     .lvcmosClkMode       = CY_LVDS_LVCMOS_CLK_SLAVE
 };
+
+cy_stc_lvds_config_t cy_lvds1_config =
+{
+    .phyConfig  = (cy_stc_lvds_phy_config_t *)&cy_lvds_phy1_config,
+    .gpifConfig = &cy_lvds_gpif1_config
+};
+
 
 #endif /* LVDS_LB_EN */
 

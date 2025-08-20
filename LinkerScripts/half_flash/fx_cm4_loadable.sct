@@ -52,17 +52,24 @@
 ; Using this memory region for other purposes will lead to unexpected behavior.
 ; Your changes must be aligned with the corresponding defines for CM0+ core in 'xx_cm0plus.scat',
 ; where 'xx' is the device group; for example, 'cy8c6xx7_cm0plus.scat'.
+;
+; We have 512 KB of High BandWidth Buffer RAM starting from address 0x1C000000.
+; The DMA descriptors (.hbDmaDescriptor section) must be placed first in this region.
+; The initialized data arrays (.descSection section) are placed after this.
+; The un-initialized data buffers (.hbBufSection) and DMA buffer heap (.hbDmaBufferHeap) are placed after this.
+;;
 ; RAM
 #define RAM_START               0x08002000
 #define RAM_SIZE                0x0001D800
 ; Flash
 #define FLASH_START             0x10008000
-#define FLASH_SIZE              0x00077E00
-#define SIGNATURE_START         0x1007FE00
+#define FLASH_SIZE              0x00037E00
+;
+#define SIGNATURE_START         0x1003FE00
 #define SIGNATURE_SIZE          0x00000200
 ;HB-SRAM
-#define DESC_START              0x1C004000
-#define DESC_SIZE               0x0000C000
+#define HBDMARAM_START          0x1C000000
+#define HBDMARAM_SIZE           0x00080000
 
 ; The size of the stack section at the end of CM4 SRAM
 #define STACK_SIZE              0x00002000
@@ -121,11 +128,18 @@ LR_IROM1 FLASH_START FLASH_SIZE
     {
     }
 
-    ; Place USB3 descriptors in this section.
-    RW_USB3_DESC DESC_START
+    ; Place DMA descriptor array (first), USB descriptors and other data buffers in the HBDMARAM section.
+    RW_USB3_DESC HBDMARAM_START HBDMARAM_SIZE
     {
+        * (.hbDmaDescriptor, +FIRST)
         * (.descSection)
         * (.hbBufSection)
+    }
+
+    ; Place the DMA buffer heap last in the HBDMARAM section at a 64-byte aligned address.
+    RW_DMA_BUF +0 ALIGN 64
+    {
+        * (.hbDmaBufferHeap)
     }
 }
 
@@ -142,13 +156,13 @@ LR_IROM2 SIGNATURE_START SIGNATURE_SIZE
 /* The following symbols used by the cymcuelftool. */
 /* Flash */
 #define __cy_memory_0_start     0x10008000
-#define __cy_memory_0_length    0x00078000
+#define __cy_memory_0_length    0x00038000
 #define __cy_memory_0_row_size  0x200
 
 /* Symbols provided to cymcuelftool for checksum generation. */
 #define __cy_app_verify_start   0x10008000
-#define __cy_app_verify_length  0x77E00
-#define __cy_app_signature_addr 0x1007FE00
+#define __cy_app_verify_length  0x00037E00
+#define __cy_app_signature_addr 0x1003FE00
 
 /* Supervisory Flash */
 #define __cy_memory_2_start     0x16000000
