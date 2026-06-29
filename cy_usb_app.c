@@ -1755,6 +1755,10 @@ void Cy_USB_AppInit(cy_stc_usb_app_ctxt_t *pAppCtxt,
         Cy_UAC_AppInit(pAppCtxt);
 #endif /* AUDIO_IF_EN */
 
+#if HID_EN
+        Cy_HID_AppInit(pAppCtxt);
+#endif /* HID_EN */
+
         pAppCtxt->vbusDebounceTimer = xTimerCreate("VbusDebounceTimer", 200, pdFALSE,
                 (void *)pAppCtxt, Cy_USB_VbusDebounceTimerCb);
         if (pAppCtxt->vbusDebounceTimer == NULL) {
@@ -2744,6 +2748,11 @@ void Cy_USB_AppSetCfgCallback(void *pAppCtxt, cy_stc_usb_usbd_ctxt_t *pUsbdCtxt,
     {
         /* Enable the interrupt for the DataWire channel used for video streaming to USBHS BULK-IN endpoint. */
         Cy_USB_AppInitDmaIntr(pUsbApp->uvcInEpNum, CY_USB_ENDP_DIR_IN, Cy_UVC_DataWire_ISR);
+
+#if HID_EN
+        /* Enable the interrupt for the DataWire channel used for HID interrupt IN endpoint. */
+        Cy_USB_AppInitDmaIntr(HID_IN_ENDPOINT, CY_USB_ENDP_DIR_IN, Cy_HID_InEpDma_ISR);
+#endif /* HID_EN */
     }
 
     pUsbApp->prevDevState = CY_USB_DEVICE_STATE_CONFIGURED;
@@ -3070,6 +3079,23 @@ void Cy_USB_AppSetupCallback(void *pAppCtxt, cy_stc_usb_usbd_ctxt_t *pUsbdCtxt,
                 isReqHandled = true;
             }
         }
+
+#if HID_EN
+        if (bRequest == CY_USB_SC_GET_DESCRIPTOR)
+        {
+            /* Handle GET_DESCRIPTOR for HID Report descriptor. */
+            if ((bTarget == CY_USB_CTRL_REQ_RECIPENT_INTF) &&
+                (CY_GET_LSB(wIndex) == HID_INTF_NUM) &&
+                (CY_GET_MSB(wValue) == CY_USB_HID_DESCR_TYPE_REPORT))
+            {
+                DBG_APP_INFO("HID GET_DESCRIPTOR Report\r\n");
+                Cy_USB_USBD_SendEndp0Data(pUsbdCtxt,
+                    (uint8_t *)cy_hid_report_descriptor,
+                    (wLength < HID_REPORT_DESC_SIZE) ? wLength : HID_REPORT_DESC_SIZE);
+                isReqHandled = true;
+            }
+        }
+#endif /* HID_EN */
     }
 
     if (bType == CY_USB_CTRL_REQ_VENDOR)
@@ -3164,6 +3190,45 @@ void Cy_USB_AppSetupCallback(void *pAppCtxt, cy_stc_usb_usbd_ctxt_t *pUsbdCtxt,
                 break;
             }
         }
+
+#if HID_EN
+        /* Handle HID class requests. */
+        if ((bTarget == CY_USB_CTRL_REQ_RECIPENT_INTF) && (CY_GET_LSB(wIndex) == HID_INTF_NUM))
+        {
+            DBG_APP_INFO("HID Class Request\r\n");
+            switch (bRequest)
+            {
+            case CY_USB_HID_SET_IDLE:
+                /* SET_IDLE: Accept and ignore (no rate limiting). */
+                Cy_USBD_SendAckSetupDataStatusStage(pUsbdCtxt);
+                isReqHandled = true;
+                break;
+
+            case CY_USB_HID_GET_IDLE:
+                /* GET_IDLE: Return 0 (indefinite idle rate). */
+                Ep0TestBuffer[0] = 0;
+                Cy_USB_USBD_SendEndp0Data(pUsbdCtxt, (uint8_t *)Ep0TestBuffer, 0x01);
+                isReqHandled = true;
+                break;
+
+            case CY_USB_HID_SET_PROTOCOL:
+                /* SET_PROTOCOL: Accept and ignore (no boot protocol support). */
+                Cy_USBD_SendAckSetupDataStatusStage(pUsbdCtxt);
+                isReqHandled = true;
+                break;
+
+            case CY_USB_HID_GET_PROTOCOL:
+                /* GET_PROTOCOL: Return 0 (boot protocol). */
+                Ep0TestBuffer[0] = 0;
+                Cy_USB_USBD_SendEndp0Data(pUsbdCtxt, (uint8_t *)Ep0TestBuffer, 0x01);
+                isReqHandled = true;
+                break;
+
+            default:
+                break;
+            }
+        }
+#endif /* HID_EN */
 
         /* Don't try to stall the endpoint if we have already attempted data transfer. */
     }

@@ -124,6 +124,7 @@ DEFINES= \
         USB3_LPM_ENABLE=0 \
         USBFS_LOGS_ENABLE=1 \
         AUDIO_IF_EN=1 \
+        HID_EN=1 \
         FPGA_CONFIG_EN=0
 
 # Internal video generation disabled by default. Set LPBK_EN=yes to enable.

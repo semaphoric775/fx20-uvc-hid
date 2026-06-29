@@ -66,6 +66,8 @@ extern "C" {
 #define CY_USB_PDM_MSG_READ_COMPLETE               (0x20)
 #define CY_USB_PDM_MSG_WRITE_COMPLETE              (0x21)
 
+#define CY_USB_HID_SEND_REPORT                     (0x30)
+
 #define CY_USB_UVC_DEVICE_MSG_QUEUE_SIZE           (16)
 #define CY_USB_UVC_DEVICE_MSG_SIZE                 (sizeof (cy_stc_usbd_app_msg_t))
 
@@ -175,6 +177,19 @@ extern "C" {
 #endif /*LVDS_LB_EN*/
 
 #define USB3_DESC_ATTRIBUTES __attribute__ ((section(".descSection"), used)) __attribute__ ((aligned (32)))
+#define HID_INTF_NUM                               (0x04)          /* Index of HID interface. */
+#define HID_IN_ENDPOINT                            (0x04)          /* IN endpoint used for HID reports. */
+#define HID_REPORT_SIZE                            (64)            /* HID input report size in bytes. */
+#define HID_REPORT_DESC_SIZE                       (14)            /* HID report descriptor size in bytes. */
+#define HID_POLLING_INTERVAL_MS                    (8)             /* HID polling interval in milliseconds. */
+#define CY_USB_HID_DESCR_TYPE_REPORT               (0x22)          /* HID report descriptor type. */
+#define CY_USB_HID_GET_REPORT                      (0x01)          /* HID GET_REPORT request. */
+#define CY_USB_HID_GET_IDLE                        (0x02)          /* HID GET_IDLE request. */
+#define CY_USB_HID_SET_REPORT                      (0x09)          /* HID SET_REPORT request. */
+#define CY_USB_HID_SET_IDLE                        (0x0A)          /* HID SET_IDLE request. */
+#define CY_USB_HID_SET_PROTOCOL                    (0x0B)          /* HID SET_PROTOCOL request. */
+#define CY_USB_HID_GET_PROTOCOL                    (0x03)          /* HID GET_PROTOCOL request. */
+
 #define HBDMA_BUF_ATTRIBUTES __attribute__ ((section(".hbBufSection"), used)) __attribute__ ((aligned (32)))
 
 #if AUDIO_IF_EN

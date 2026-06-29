@@ -126,11 +126,21 @@ const uint8_t SuperSpeedConfigDescr[] = {
     0x09,                           /* Descriptor size */
     0x02,                           /* Configuration descriptor type */
 #if AUDIO_IF_EN
+#if HID_EN
+    0x9E,0x01,                      /* Length of this descriptor and all sub descriptors: 414 bytes. */
+    0x05,                           /* Number of interfaces: 5 */
+#else
     0x7F,0x01,                      /* Length of this descriptor and all sub descriptors: 383 bytes. */
     0x04,                           /* Number of interfaces: 4 */
+#endif /* HID_EN */
+#else
+#if HID_EN
+    0x35,0x01,                      /* Length of this descriptor and all sub descriptors: 309 bytes. */
+    0x03,                           /* Number of interfaces: 3 */
 #else
     0x16,0x01,                      /* Length of this descriptor and all sub descriptors: 278 bytes. */
     0x02,                           /* Number of interfaces: 2 */
+#endif /* HID_EN */
 #endif /* AUDIO_IF_EN */
     0x01,                           /* Configuration number */
     0x00,                           /* Configuration string index */
@@ -474,6 +484,46 @@ const uint8_t SuperSpeedConfigDescr[] = {
     0x00,                           /* bLockDelayUnits - Undefined */
     0x00, 0x00,                     /* wLockDelay - unused */
 #endif /* AUDIO_IF_EN */
+
+#if HID_EN
+    /* Standard HID Interface Descriptor */
+    0x09,                           /* Descriptor size */
+    0x04,                           /* Interface descriptor type */
+    HID_INTF_NUM,                   /* Interface number */
+    0x00,                           /* Alternate setting */
+    0x01,                           /* Number of endpoints: 1 */
+    0x03,                           /* Interface class: HID */
+    0x00,                           /* Interface subclass: none */
+    0x00,                           /* Interface protocol: none */
+    0x00,                           /* Interface string index */
+
+    /* HID Descriptor */
+    0x09,                           /* Descriptor size */
+    0x21,                           /* HID descriptor type */
+    0x11, 0x01,                     /* HID spec release: 1.11 */
+    0x00,                           /* Country code: not localized */
+    0x01,                           /* Number of HID class descriptors */
+    0x22,                           /* Descriptor type: Report */
+    (HID_REPORT_DESC_SIZE & 0xFF),  /* LSB of report descriptor length */
+    (HID_REPORT_DESC_SIZE >> 8),    /* MSB of report descriptor length */
+
+    /* Endpoint descriptor for HID IN */
+    0x07,                           /* Descriptor size */
+    0x05,                           /* Endpoint descriptor type */
+    0x80 | HID_IN_ENDPOINT,         /* Endpoint address: IN, endpoint 4 */
+    0x03,                           /* Endpoint type: Interrupt */
+    (HID_REPORT_SIZE & 0xFF),       /* LSB of max packet size */
+    (HID_REPORT_SIZE >> 8),         /* MSB of max packet size */
+    0x07,                           /* bInterval: 2^(7-1)*125us = 8ms */
+
+    /* SuperSpeed endpoint companion descriptor */
+    0x06,                           /* Descriptor size */
+    0x30,                           /* SS endpoint companion descriptor type */
+    0x00,                           /* Max burst: 1 packet per burst */
+    0x00,                           /* Mult: 1 */
+    (HID_REPORT_SIZE & 0xFF),       /* LSB of bytes per interval */
+    (HID_REPORT_SIZE >> 8),         /* MSB of bytes per interval */
+#endif /* HID_EN */
 };
 
 /* Standard High Speed Configuration Descriptor */
@@ -484,11 +534,21 @@ const uint8_t HighSpeedConfigDescr[] = {
     0x09,                           /* Descriptor size */
     0x02,                           /* Configuration descriptor type */
 #if AUDIO_IF_EN
+#if HID_EN
+    0x4A,0x01,                      /* Length of this descriptor and all sub descriptors: 330 bytes. */
+    0x05,                           /* Number of interfaces: 5 */
+#else
     0x31,0x01,                      /* Length of this descriptor and all sub descriptors: 305 bytes. */
-    0x04,                           /* Number of interfaces: 2 */
+    0x04,                           /* Number of interfaces: 4 */
+#endif /* HID_EN */
+#else
+#if HID_EN
+    0xE7,0x00,                      /* Length of this descriptor and all sub descriptors: 231 bytes. */
+    0x03,                           /* Number of interfaces: 3 */
 #else
     0xCE,0x00,                      /* Length of this descriptor and all sub descriptors: 206 bytes. */
     0x02,                           /* Number of interfaces: 2 */
+#endif /* HID_EN */
 #endif /* AUDIO_IF_EN */
     0x01,                           /* Configuration number */
     0x00,                           /* Configuration string index */
@@ -780,6 +840,38 @@ const uint8_t HighSpeedConfigDescr[] = {
     0x00,                           /* bLockDelayUnits - Unused */
     0x00, 0x00,                     /* wLockDelay - unused */
 #endif /* AUDIO_IF_EN */
+
+#if HID_EN
+    /* Standard HID Interface Descriptor */
+    0x09,                           /* Descriptor size */
+    0x04,                           /* Interface descriptor type */
+    HID_INTF_NUM,                   /* Interface number */
+    0x00,                           /* Alternate setting */
+    0x01,                           /* Number of endpoints: 1 */
+    0x03,                           /* Interface class: HID */
+    0x00,                           /* Interface subclass: none */
+    0x00,                           /* Interface protocol: none */
+    0x00,                           /* Interface string index */
+
+    /* HID Descriptor */
+    0x09,                           /* Descriptor size */
+    0x21,                           /* HID descriptor type */
+    0x11, 0x01,                     /* HID spec release: 1.11 */
+    0x00,                           /* Country code: not localized */
+    0x01,                           /* Number of HID class descriptors */
+    0x22,                           /* Descriptor type: Report */
+    (HID_REPORT_DESC_SIZE & 0xFF),  /* LSB of report descriptor length */
+    (HID_REPORT_DESC_SIZE >> 8),    /* MSB of report descriptor length */
+
+    /* Endpoint descriptor for HID IN */
+    0x07,                           /* Descriptor size */
+    0x05,                           /* Endpoint descriptor type */
+    0x80 | HID_IN_ENDPOINT,         /* Endpoint address: IN, endpoint 4 */
+    0x03,                           /* Endpoint type: Interrupt */
+    (HID_REPORT_SIZE & 0xFF),       /* LSB of max packet size */
+    (HID_REPORT_SIZE >> 8),         /* MSB of max packet size */
+    0x07,                           /* bInterval: 2^(7-1)*125us = 8ms */
+#endif /* HID_EN */
 };
 
 /* Standard device descriptor for full speed (FS) */

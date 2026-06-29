@@ -269,6 +269,16 @@ struct cy_stc_usb_app_ctxt_
     TimerHandle_t pdmActivateTimer;             /** Handle of timer used to activate PDM channels. */ 
 #endif /* AUDIO_IF_EN */
 
+#if HID_EN
+    /* HID interface specific fields. */
+    uint8_t  hidInEpNum;                           /** Index of HID IN endpoint. */
+    bool     hidReportPending;                     /** Whether a HID report write is in progress. */
+    uint8_t  hidReportBuffer[HID_REPORT_SIZE];     /** Buffer for HID input report data. */
+    QueueHandle_t hidMsgQueue;                     /** Message queue for HID task. */
+    TaskHandle_t hidTaskHandle;                    /** HID application task handle. */
+    TimerHandle_t hidTimer;                        /** Periodic HID report timer handle. */
+#endif /* HID_EN */
+
     TimerHandle_t fpsTimer;
     uint8_t fpgaVersion;
     uint8_t *qspiWriteBuffer;
@@ -1400,6 +1410,12 @@ Cy_UvcInMem_DmaCallback(
         cy_en_hbdma_cb_type_t       type,
         cy_stc_hbdma_buff_status_t *pbufStat,
         void                       *userCtx);
+
+#if HID_EN
+void Cy_HID_AppInit(cy_stc_usb_app_ctxt_t *pAppCtxt);
+void Cy_HID_InEpDma_ISR(void);
+extern const uint8_t cy_hid_report_descriptor[];
+#endif /* HID_EN */
 
 #if defined(__cplusplus)
 }
